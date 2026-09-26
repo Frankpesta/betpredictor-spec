@@ -1,0 +1,76 @@
+[general]
+timezone = "Africa/Lagos"
+db_path = "data/betpredictor.db"
+raw_dir = "data/raw"
+reports_dir = "data/reports"
+
+[leagues]
+enabled = ["EPL", "LALIGA", "SERIEA", "BUNDES", "LIGUE1"]
+history_seasons = ["2019-20","2020-21","2021-22","2022-23","2023-24","2024-25","2025-26","2026-27"]
+
+[scraping]
+min_delay_seconds = 4.0
+max_delay_seconds = 9.0
+max_retries = 3
+user_agent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0 Safari/537.36"
+sportybet_country = "ng"
+headless = true
+
+[model]
+version = "dc-1.0.0"
+train_seasons_back = 3          # seasons of history used per fit
+xi_per_day = 0.0019             # time-decay; tuned by backtest
+ridge_lambda = 0.5              # L2 penalty on attack/defence params
+max_goals = 10                  # score matrix is (max_goals+1)^2
+xg_blend_weight = 0.5           # weight on goals-model log-rates; 1-w on xG-model
+rho_bounds = [-0.2, 0.2]
+min_team_matches = 8            # below this, team is flagged low-confidence
+
+[value]
+market_shrink_weight = 0.7      # p_final = w*p_model + (1-w)*p_market_devig ; tuned by backtest
+min_edge_leg = 0.03
+max_model_market_gap = 0.15     # abs(p_final - p_market_devig) above this => flagged
+min_odds = 1.20
+max_odds = 2.60
+allowed_lines = "half_only"     # v1: only x.5 lines enter slips
+
+[slips.daily_2odds]
+enabled = true
+min_legs = 2
+max_legs = 3
+target_odds_min = 1.85
+target_odds_max = 2.30
+min_leg_probability = 0.60
+min_slip_edge = 0.02
+window_hours = 24
+
+[slips.mid_acca]
+enabled = true
+min_legs = 5
+max_legs = 8
+min_leg_probability = 0.62
+min_slip_edge = 0.00
+
+[slips.mega_acca]
+enabled = true
+max_legs = 30
+min_leg_probability = 0.65
+min_leg_edge = 0.00
+weekend_start = "Fri 18:00"     # Lagos time
+weekend_end = "Mon 02:00"
+
+[backtest]
+test_seasons = ["2023-24","2024-25","2025-26"]
+refit_every_days = 7
+odds_source = "B365"            # bet price
+closing_source = "PS"           # CLV benchmark (Pinnacle closing)
+
+[gates]
+max_calibration_ece = 0.03
+min_bets_for_roi = 400
+min_roi = 0.0                   # must be > this
+require_beats_market_logloss = false
+
+[api]
+host = "127.0.0.1"
+port = 8765

@@ -1,0 +1,6 @@
+allowBuilds:
+  # v13 ships N-API prebuilds (incl. win32-x64); its source-build script is not needed
+  better-sqlite3: false
+  esbuild: true
+  sharp: false
+  unrs-resolver: false
