@@ -134,3 +134,36 @@ def test_downgrade_and_upgrade(tmp_path: Path) -> None:
     command.upgrade(cfg, "head")
     assert set(inspect(eng).get_table_names()) >= EXPECTED_TABLES
     eng.dispose()
+
+
+def test_fixture_key_allows_repeat_intl_pairs_but_not_club_repeats(migrated_db: Path) -> None:
+    eng = get_engine(migrated_db)
+    ins = (
+        "INSERT INTO matches (league_id, season, kickoff_utc, home_team_id, away_team_id,"
+        " fixture_key) VALUES (1, '2025-26', '2025-09-01 12:00:00', 1, 2, :k)"
+    )
+    with eng.begin() as conn:
+        conn.execute(
+            text("INSERT INTO leagues (key, name, fd_code, enabled) VALUES ('INTL','I',NULL,1)")
+        )
+        conn.execute(text("INSERT INTO teams (league_id, canonical_name) VALUES (1,'A'),(1,'B')"))
+        conn.execute(text(ins), {"k": "2025-09-01"})
+        conn.execute(text(ins), {"k": "2026-03-20"})  # same pair, same season, other date: ok
+        conn.execute(text(ins), {"k": ""})  # club-style row
+    with pytest.raises(IntegrityError), eng.begin() as conn:
+        conn.execute(text(ins), {"k": ""})  # a second club-style row for the pair: rejected
+    with eng.begin() as conn:
+        row = conn.execute(text("SELECT neutral FROM matches LIMIT 1")).scalar_one()
+    assert row == 0
+
+
+def test_downgrade_to_0001_and_back(tmp_path: Path) -> None:
+    db = tmp_path / "dg.db"
+    cfg = alembic_config(db)
+    command.upgrade(cfg, "head")
+    command.downgrade(cfg, "0001")  # through 0004, 0003 and 0002
+    eng = create_engine(sqlite_url(db))
+    cols = {c["name"] for c in inspect(eng).get_columns("matches")}
+    eng.dispose()
+    assert "neutral" not in cols and "fixture_key" not in cols
+    command.upgrade(cfg, "head")

@@ -1,0 +1,177 @@
+{
+ "request": {
+  "selections": [
+   {
+    "eventId": "sr:match:72221292",
+    "marketId": "16",
+    "specifier": "hcp=-0.5",
+    "outcomeId": "1714"
+   },
+   {
+    "eventId": "sr:match:72221294",
+    "marketId": "14",
+    "specifier": "hcp=2:0",
+    "outcomeId": "1711"
+   }
+  ]
+ },
+ "response": {
+  "bizCode": 10000,
+  "isAvailable": true,
+  "message": "Success",
+  "data": {
+   "shareCode": "X6YP10",
+   "shareURL": "http://www.sportybet.com/ng/?shareCode=X6YP10",
+   "ticket": {
+    "selections": [
+     {
+      "eventId": "sr:match:72221292",
+      "marketId": "16",
+      "specifier": "hcp=-0.5",
+      "outcomeId": "1714",
+      "parentBetBuilderMarketId": "",
+      "sportId": "sr:sport:1",
+      "estimateStartTime": 1791631800000
+     },
+     {
+      "eventId": "sr:match:72221294",
+      "marketId": "14",
+      "specifier": "hcp=2:0",
+      "outcomeId": "1711",
+      "parentBetBuilderMarketId": "",
+      "sportId": "sr:sport:1",
+      "estimateStartTime": 1791640800000
+     }
+    ]
+   },
+   "userId": "",
+   "operId": "2",
+   "deadline": 1792504800000,
+   "outcomes": [
+    {
+     "eventId": "sr:match:72221292",
+     "gameId": "29490",
+     "productStatus": "0#0",
+     "estimateStartTime": 1791631800000,
+     "status": 0,
+     "matchStatus": "Not start",
+     "homeTeamName": "Arsenal",
+     "awayTeamName": "Leeds United",
+     "sport": {
+      "id": "sr:sport:1",
+      "name": "Football",
+      "category": {
+       "id": "sr:category:1",
+       "name": "England",
+       "tournament": {
+        "id": "sr:tournament:17",
+        "name": "Premier League"
+       }
+      }
+     },
+     "markets": [
+      {
+       "id": "16",
+       "specifier": "hcp=-0.5",
+       "product": 3,
+       "desc": "Asian Handicap -0.5",
+       "status": 0,
+       "group": "Main",
+       "favourite": 0,
+       "outcomes": [
+        {
+         "id": "1714",
+         "odds": "1.41",
+         "probability": "0.6761750000",
+         "voidProbability": "0E-10",
+         "isActive": 1,
+         "desc": "Home (-0.5)"
+        }
+       ],
+       "sourceType": "BET_RADAR",
+       "lastOddsChangeTime": 1790503179965,
+       "banned": false
+      }
+     ],
+     "bookingStatus": "Unavailable",
+     "bgEvent": false,
+     "parentBetBuilderMarketId": "",
+     "matchTrackerNotAllowed": false,
+     "eventSource": {
+      "preMatchSource": {
+       "sourceType": "BET_RADAR",
+       "sourceId": "72221292"
+      },
+      "liveSource": {
+       "sourceType": "BET_RADAR",
+       "sourceId": "72221292"
+      }
+     },
+     "banned": false
+    },
+    {
+     "eventId": "sr:match:72221294",
+     "gameId": "22471",
+     "productStatus": "0#0",
+     "estimateStartTime": 1791640800000,
+     "status": 0,
+     "matchStatus": "Not start",
+     "homeTeamName": "Aston Villa",
+     "awayTeamName": "Brentford",
+     "sport": {
+      "id": "sr:sport:1",
+      "name": "Football",
+      "category": {
+       "id": "sr:category:1",
+       "name": "England",
+       "tournament": {
+        "id": "sr:tournament:17",
+        "name": "Premier League"
+       }
+      }
+     },
+     "markets": [
+      {
+       "id": "14",
+       "specifier": "hcp=2:0",
+       "product": 3,
+       "desc": "Handicap 2:0",
+       "status": 0,
+       "group": "Main",
+       "favourite": 0,
+       "outcomes": [
+        {
+         "id": "1711",
+         "odds": "1.18",
+         "probability": "0.8184220000",
+         "voidProbability": "0E-10",
+         "isActive": 1,
+         "desc": "Home (2:0)"
+        }
+       ],
+       "sourceType": "BET_RADAR",
+       "lastOddsChangeTime": 1790442461608,
+       "banned": false
+      }
+     ],
+     "bookingStatus": "Unavailable",
+     "bgEvent": false,
+     "parentBetBuilderMarketId": "",
+     "matchTrackerNotAllowed": false,
+     "eventSource": {
+      "preMatchSource": {
+       "sourceType": "BET_RADAR",
+       "sourceId": "72221294"
+      },
+      "liveSource": {
+       "sourceType": "BET_RADAR",
+       "sourceId": "72221294"
+      }
+     },
+     "banned": false
+    }
+   ],
+   "unavailableOutcomes": []
+  }
+ }
+}

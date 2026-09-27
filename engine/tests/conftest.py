@@ -5,6 +5,7 @@ import tempfile
 from collections.abc import Iterator
 from pathlib import Path
 
+import httpx
 import pytest
 from alembic import command
 from alembic.config import Config
@@ -42,3 +43,13 @@ def migrated_db(_template_db: Path, tmp_path: Path) -> Iterator[Path]:
     shutil.copyfile(_template_db, db)
     yield db
     get_engine(db).dispose()
+
+
+@pytest.fixture(autouse=True)
+def _no_network(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Tests never touch live sites; use httpx.MockTransport instead."""
+
+    def refuse(self: httpx.HTTPTransport, request: httpx.Request) -> httpx.Response:
+        raise RuntimeError(f"network access in tests is forbidden: {request.url}")
+
+    monkeypatch.setattr(httpx.HTTPTransport, "handle_request", refuse)

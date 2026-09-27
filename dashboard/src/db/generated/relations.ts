@@ -1,5 +1,5 @@
 import { relations } from "drizzle-orm/relations";
-import { leagues, modelRuns, teams, matches, teamAliases, historicalOdds, oddsSnapshots, predictions, valueLegs, slipLegs, slips } from "./schema";
+import { leagues, modelRuns, teams, teamAliases, matches, historicalOdds, oddsSnapshots, predictions, valueLegs, slipLegs, slips } from "./schema";
 
 export const modelRunsRelations = relations(modelRuns, ({one, many}) => ({
 	league: one(leagues, {
@@ -20,34 +20,13 @@ export const teamsRelations = relations(teams, ({one, many}) => ({
 		fields: [teams.leagueId],
 		references: [leagues.id]
 	}),
-	matches_homeTeamId: many(matches, {
-		relationName: "matches_homeTeamId_teams_id"
-	}),
+	teamAliases: many(teamAliases),
 	matches_awayTeamId: many(matches, {
 		relationName: "matches_awayTeamId_teams_id"
 	}),
-	teamAliases: many(teamAliases),
-}));
-
-export const matchesRelations = relations(matches, ({one, many}) => ({
-	league: one(leagues, {
-		fields: [matches.leagueId],
-		references: [leagues.id]
-	}),
-	team_homeTeamId: one(teams, {
-		fields: [matches.homeTeamId],
-		references: [teams.id],
+	matches_homeTeamId: many(matches, {
 		relationName: "matches_homeTeamId_teams_id"
 	}),
-	team_awayTeamId: one(teams, {
-		fields: [matches.awayTeamId],
-		references: [teams.id],
-		relationName: "matches_awayTeamId_teams_id"
-	}),
-	historicalOdds: many(historicalOdds),
-	oddsSnapshots: many(oddsSnapshots),
-	predictions: many(predictions),
-	valueLegs: many(valueLegs),
 }));
 
 export const teamAliasesRelations = relations(teamAliases, ({one}) => ({
@@ -61,6 +40,27 @@ export const historicalOddsRelations = relations(historicalOdds, ({one}) => ({
 	match: one(matches, {
 		fields: [historicalOdds.matchId],
 		references: [matches.id]
+	}),
+}));
+
+export const matchesRelations = relations(matches, ({one, many}) => ({
+	historicalOdds: many(historicalOdds),
+	oddsSnapshots: many(oddsSnapshots),
+	predictions: many(predictions),
+	valueLegs: many(valueLegs),
+	league: one(leagues, {
+		fields: [matches.leagueId],
+		references: [leagues.id]
+	}),
+	team_awayTeamId: one(teams, {
+		fields: [matches.awayTeamId],
+		references: [teams.id],
+		relationName: "matches_awayTeamId_teams_id"
+	}),
+	team_homeTeamId: one(teams, {
+		fields: [matches.homeTeamId],
+		references: [teams.id],
+		relationName: "matches_homeTeamId_teams_id"
 	}),
 }));
 

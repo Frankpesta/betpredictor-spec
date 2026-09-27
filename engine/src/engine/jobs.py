@@ -14,6 +14,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import random
 import sys
 import traceback
 from collections.abc import Callable, Iterator
@@ -136,26 +137,140 @@ def sync_leagues(session: Session, settings: Settings) -> None:
 JobFn = Callable[[JobContext], None]
 
 
-def _not_built(phase: int) -> JobFn:
-    def run(ctx: JobContext) -> None:
-        raise NotImplementedError(
-            f"job '{ctx.name}' is built in Phase {phase} (docs/08); not available yet"
-        )
+def _ingest(ctx: JobContext) -> None:
+    """football-data history -> seed aliases -> Understat xG -> acceptance report (docs/02)."""
+    from engine.ingest import checks, football_data, international, understat
+    from engine.ingest.fetch import PoliteClient
+    from engine.mapping.teams import apply_seed, clear_resolved, load_seed
 
-    return run
+    leagues = ctx.settings.enabled_leagues()
+    with PoliteClient(ctx.settings, football_data.SOURCE) as client:
+        football_data.ingest_all(ctx, client, leagues)
+        ctx.count("fd_http_requests", client.requests_made)
+        ctx.count("fd_http_retries", client.retries)
+
+    if any(lg.international for lg in leagues):
+        with PoliteClient(ctx.settings, international.SOURCE) as client:
+            international.ingest(ctx, client)
+            ctx.count("intl_http_requests", client.requests_made)
+
+    with session_scope(ctx.db_path) as s:
+        seeded = apply_seed(s, load_seed())
+        clear_resolved(s)
+    ctx.note("aliases_inserted", seeded.inserted)
+    for m in seeded.missing_canonical:
+        ctx.warn(f"seed canonical team not found: {m}")
+
+    with PoliteClient(ctx.settings, understat.SOURCE) as client:
+        understat.ingest_all(ctx, client, leagues)
+        ctx.count("understat_http_requests", client.requests_made)
+        ctx.count("understat_http_retries", client.retries)
+
+    with session_scope(ctx.db_path) as s:
+        report, ok = checks.acceptance_report(
+            s,
+            {lg.key for lg in leagues if lg.understat_key is not None},
+            random.Random(),
+        )
+    ctx.note("acceptance_passed", ok)
+    print(report)
+
+
+def _map_teams(ctx: JobContext) -> None:
+    from engine.mapping.teams import run_map_teams
+
+    print(run_map_teams(ctx))
+
+
+def _fit(ctx: JobContext) -> None:
+    """Fit goals + xG models for every enabled league as of now (docs/03, docs/08 Phase 2)."""
+    from engine.db.model_runs import fit_and_store, format_fit_summary
+    from engine.db.queries import league_by_key
+    from engine.ingest.fetch import current_season_start_year
+
+    now = utcnow()
+    year = current_season_start_year(now.date())
+    season = f"{year}-{(year + 1) % 100:02d}"
+    out: list[str] = []
+    for lg in ctx.settings.enabled_leagues():
+        with session_scope(ctx.db_path) as s:
+            league = league_by_key(s, lg.key)
+            stored = fit_and_store(s, league, ctx.settings, now)
+            out.append(format_fit_summary(s, league, stored, ctx.settings, season))
+            ctx.summary.setdefault("runs", {})[lg.key] = {
+                "model_run_id": stored.run.id,
+                "n_matches": stored.run.n_matches,
+                "converged": stored.run.converged,
+                "retried": stored.model.goals.retried,
+                "low_confidence": len(stored.model.low_confidence),
+            }
+    print("\n\n".join(out))
+
+
+def _backtest(ctx: JobContext) -> None:
+    from engine.backtest.run import run_backtest
+
+    print(run_backtest(ctx))
+
+
+def _discover(ctx: JobContext) -> None:
+    from engine.sportybet.discovery import run_discovery
+
+    print(run_discovery(ctx))
+
+
+def _odds(ctx: JobContext) -> None:
+    from engine.sportybet.odds import run_odds
+
+    print(run_odds(ctx))
+
+
+def _picks(ctx: JobContext) -> None:
+    from engine.db.picks import run_picks
+
+    print(run_picks(ctx))
+
+
+def _book(ctx: JobContext) -> None:
+    from engine.sportybet.booking import run_book
+
+    print(run_book(ctx))
+
+
+def _book_test(ctx: JobContext) -> None:
+    from engine.sportybet.booking import run_book_test
+
+    print(run_book_test(ctx))
+
+
+def _close(ctx: JobContext) -> None:
+    from engine.settle.clv import run_close
+
+    print(run_close(ctx))
+
+
+def _settle(ctx: JobContext) -> None:
+    from engine.settle.clv import update_leg_clv
+    from engine.settle.settle import run_settle
+
+    print(run_settle(ctx))
+    with session_scope(ctx.db_path) as s:
+        ctx.note("legs_clv_updated", update_leg_clv(s))
 
 
 JOBS: dict[str, JobFn] = {
-    "ingest": _not_built(1),
-    "map-teams": _not_built(1),
-    "fit": _not_built(2),
-    "backtest": _not_built(2),
-    "discover": _not_built(3),
-    "odds": _not_built(3),
-    "picks": _not_built(4),
-    "book": _not_built(5),
-    "close": _not_built(6),
-    "settle": _not_built(6),
+    "ingest": _ingest,
+    "map-teams": _map_teams,
+    "fit": _fit,
+    "backtest": _backtest,
+    "discover": _discover,
+    "odds": _odds,
+    "picks": _picks,
+    "book": _book,
+    # acceptance helper for Phase 5: books a 2-leg test selection, writes no slip
+    "book-test": _book_test,
+    "close": _close,
+    "settle": _settle,
 }
 # `daily` is a composite: odds -> picks -> book, each recorded as its own job run.
 DAILY_SEQUENCE = ("odds", "picks", "book")
@@ -187,6 +302,10 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("job", nargs="?", choices=JOB_NAMES, help="job to run")
     parser.add_argument("--list", action="store_true", help="list available jobs")
     args = parser.parse_args(argv)
+    # Reports contain non-ASCII (team names, arrows); Windows consoles default to cp1252.
+    for stream in (sys.stdout, sys.stderr):
+        if hasattr(stream, "reconfigure"):
+            stream.reconfigure(encoding="utf-8", errors="replace")
     if args.list or not args.job:
         print("\n".join(JOB_NAMES))
         return 0

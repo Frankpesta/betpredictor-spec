@@ -1,0 +1,117 @@
+{
+ "teams": {},
+ "players": [],
+ "dates": [
+  {
+   "id": "28778",
+   "isResult": true,
+   "h": {
+    "id": "87",
+    "title": "Liverpool",
+    "short_title": "LIV"
+   },
+   "a": {
+    "id": "73",
+    "title": "Bournemouth",
+    "short_title": "BOU"
+   },
+   "goals": {
+    "h": "4",
+    "a": "2"
+   },
+   "xG": {
+    "h": "2.33007",
+    "a": "1.57303"
+   },
+   "datetime": "2025-08-15 19:00:00",
+   "forecast": {
+    "w": "0.5498",
+    "d": "0.2276",
+    "l": "0.2226"
+   }
+  },
+  {
+   "id": "28779",
+   "isResult": true,
+   "h": {
+    "id": "71",
+    "title": "Aston Villa",
+    "short_title": "AVL"
+   },
+   "a": {
+    "id": "86",
+    "title": "Newcastle United",
+    "short_title": "NEW"
+   },
+   "goals": {
+    "h": "0",
+    "a": "0"
+   },
+   "xG": {
+    "h": "0.318601",
+    "a": "1.40098"
+   },
+   "datetime": "2025-08-16 11:30:00",
+   "forecast": {
+    "w": "0.0629",
+    "d": "0.2371",
+    "l": "0.7"
+   }
+  },
+  {
+   "id": "28780",
+   "isResult": true,
+   "h": {
+    "id": "220",
+    "title": "Brighton",
+    "short_title": "BRI"
+   },
+   "a": {
+    "id": "228",
+    "title": "Fulham",
+    "short_title": "FLH"
+   },
+   "goals": {
+    "h": "1",
+    "a": "1"
+   },
+   "xG": {
+    "h": "1.44008",
+    "a": "0.902883"
+   },
+   "datetime": "2025-08-16 14:00:00",
+   "forecast": {
+    "w": "0.5158",
+    "d": "0.3088",
+    "l": "0.1754"
+   }
+  },
+  {
+   "id": "99999",
+   "isResult": false,
+   "h": {
+    "id": "87",
+    "title": "Arsenal",
+    "short_title": "LIV"
+   },
+   "a": {
+    "id": "73",
+    "title": "Chelsea",
+    "short_title": "BOU"
+   },
+   "goals": {
+    "h": null,
+    "a": null
+   },
+   "xG": {
+    "h": null,
+    "a": null
+   },
+   "datetime": "2026-10-03 14:00:00"
+  },
+  {
+   "id": "1",
+   "isResult": true
+  }
+ ]
+}

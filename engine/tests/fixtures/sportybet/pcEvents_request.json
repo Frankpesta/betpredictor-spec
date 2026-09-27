@@ -1,0 +1,11 @@
+[
+ {
+  "sportId": "sr:sport:1",
+  "marketId": "1,18,16",
+  "tournamentId": [
+   [
+    "sr:tournament:17"
+   ]
+  ]
+ }
+]

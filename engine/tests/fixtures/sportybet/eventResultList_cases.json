@@ -1,0 +1,154 @@
+{
+ "bizCode": 10000,
+ "message": "0#0",
+ "data": {
+  "totalNum": 1069,
+  "tournaments": [
+   {
+    "id": "sr:tournament:23755",
+    "name": "UEFA Nations League",
+    "events": [
+     {
+      "eventId": "sr:match:68932504",
+      "gameId": "20015",
+      "estimateStartTime": 1790448300000,
+      "status": 3,
+      "setScore": "2:0",
+      "gameScore": [
+       "2:0",
+       "0:0"
+      ],
+      "pointScore": "[\"2:0\",\"0:0\"]",
+      "matchStatus": "Ended",
+      "homeTeamName": "Albania",
+      "awayTeamName": "Belarus",
+      "regularTimeScore": [
+       "2:0"
+      ],
+      "ai": false,
+      "bgEvent": false,
+      "matchTrackerNotAllowed": false,
+      "containsPcbb": false,
+      "banned": false
+     }
+    ],
+    "categoryName": "International",
+    "categoryId": "sr:category:4"
+   },
+   {
+    "id": "sr:tournament:851",
+    "name": "Int. Friendly Games",
+    "events": [
+     {
+      "eventId": "sr:match:73600382",
+      "gameId": "44412",
+      "estimateStartTime": 1790454600000,
+      "status": 4,
+      "setScore": "4:1",
+      "gameScore": [
+       "1:1",
+       "3:0"
+      ],
+      "matchStatus": "Ended",
+      "homeTeamName": "USA",
+      "awayTeamName": "Peru",
+      "regularTimeScore": [
+       "1:1"
+      ],
+      "ai": false,
+      "bgEvent": false,
+      "matchTrackerNotAllowed": false,
+      "containsPcbb": false,
+      "banned": false
+     }
+    ],
+    "categoryName": "International",
+    "categoryId": "sr:category:4"
+   },
+   {
+    "id": "sr:tournament:54",
+    "name": "LALIGA HYPERMOTION",
+    "events": [
+     {
+      "eventId": "sr:match:72477446",
+      "gameId": "39180",
+      "estimateStartTime": 1790440200000,
+      "status": 4,
+      "setScore": "1:1",
+      "gameScore": [
+       "1:0",
+       "0:1"
+      ],
+      "matchStatus": "Ended",
+      "homeTeamName": "Tenerife CD",
+      "awayTeamName": "Cadiz",
+      "regularTimeScore": [
+       "1:0"
+      ],
+      "ai": false,
+      "bgEvent": false,
+      "matchTrackerNotAllowed": false,
+      "containsPcbb": false,
+      "banned": false
+     }
+    ],
+    "categoryName": "Spain",
+    "categoryId": "sr:category:32"
+   },
+   {
+    "id": "sr:tournament:326",
+    "name": "Beker van Belgie",
+    "events": [
+     {
+      "eventId": "sr:match:74062554",
+      "gameId": "35427",
+      "estimateStartTime": 1790445600000,
+      "status": 3,
+      "setScore": "3:4",
+      "gameScore": [
+       "1:0",
+       "0:1",
+       "0:0",
+       "0:0",
+       "2:3"
+      ],
+      "pointScore": "[\"1:0\",\"0:1\",\"0:0\",\"0:0\",\"2:3\"]",
+      "matchStatus": "Ended",
+      "homeTeamName": "Olympic Club De Charleroi",
+      "awayTeamName": "RSC Habay",
+      "ai": false,
+      "bgEvent": false,
+      "matchTrackerNotAllowed": false,
+      "containsPcbb": false,
+      "banned": false
+     }
+    ],
+    "categoryName": "Belgium",
+    "categoryId": "sr:category:33"
+   },
+   {
+    "id": "sr:tournament:628",
+    "name": "FA Trophy",
+    "events": [
+     {
+      "eventId": "sr:match:74737790",
+      "gameId": "34874",
+      "estimateStartTime": 1790431200000,
+      "status": 4,
+      "setScore": "2:1",
+      "matchStatus": "Ended",
+      "homeTeamName": "Alfreton Town FC",
+      "awayTeamName": "Shifnal Town",
+      "ai": false,
+      "bgEvent": false,
+      "matchTrackerNotAllowed": false,
+      "containsPcbb": false,
+      "banned": false
+     }
+    ],
+    "categoryName": "England Amateur",
+    "categoryId": "sr:category:252"
+   }
+  ]
+ }
+}

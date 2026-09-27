@@ -24,6 +24,7 @@ MARKETS = ("OU", "AH")
 SELECTIONS = ("over", "under", "home", "away")
 SANITY_STATUSES = ("ok", "flagged")
 SLIP_TYPES = ("daily_2odds", "mid_acca", "mega_acca")
+SLIP_POOLS = ("club", "intl")  # docs/09 §5: INTL legs only in INTL-only slips
 BOOKING_STATUSES = ("pending", "booked", "failed", "manual")
 SLIP_MODES = ("paper", "placed")
 SLIP_STATUSES = ("open", "won", "lost", "void", "partial")
@@ -41,7 +42,7 @@ class League(IdTimestampMixin, Base):
 
     key: Mapped[str] = mapped_column(Text, unique=True)
     name: Mapped[str] = mapped_column(Text)
-    fd_code: Mapped[str] = mapped_column(Text)
+    fd_code: Mapped[str | None] = mapped_column(Text)  # NULL for INTL (docs/09)
     understat_key: Mapped[str | None] = mapped_column(Text)
     enabled: Mapped[bool] = mapped_column(IntBool, default=False, server_default="0")
 
@@ -70,8 +71,11 @@ class TeamAlias(IdTimestampMixin, Base):
 class Match(IdTimestampMixin, Base):
     __tablename__ = "matches"
     __table_args__ = (
-        UniqueConstraint("league_id", "home_team_id", "away_team_id", "season"),
+        # Clubs meet once at home per season (fixture_key ''); national teams can meet
+        # more often, so INTL rows set fixture_key = match date (docs/09 §3a).
+        UniqueConstraint("league_id", "home_team_id", "away_team_id", "season", "fixture_key"),
         enum_check("status", MATCH_STATUSES),
+        bool_check("neutral"),
     )
 
     league_id: Mapped[int] = mapped_column(_fk("leagues.id"), index=True)
@@ -85,6 +89,8 @@ class Match(IdTimestampMixin, Base):
     away_xg: Mapped[float | None] = mapped_column(REAL)
     status: Mapped[str] = mapped_column(Text, default="scheduled", server_default="scheduled")
     fd_row_hash: Mapped[str | None] = mapped_column(Text, unique=True)
+    neutral: Mapped[bool] = mapped_column(IntBool, default=False, server_default="0")
+    fixture_key: Mapped[str] = mapped_column(Text, default="", server_default="")
     sportybet_event_id: Mapped[str | None] = mapped_column(Text, unique=True)
 
     league: Mapped[League] = relationship()
@@ -206,12 +212,14 @@ class Slip(IdTimestampMixin, Base):
     __tablename__ = "slips"
     __table_args__ = (
         enum_check("slip_type", SLIP_TYPES),
+        enum_check("pool", SLIP_POOLS),
         enum_check("booking_status", BOOKING_STATUSES),
         enum_check("mode", SLIP_MODES),
         enum_check("status", SLIP_STATUSES),
     )
 
     slip_type: Mapped[str] = mapped_column(Text)
+    pool: Mapped[str] = mapped_column(Text, default="club", server_default="club")
     slip_date: Mapped[date] = mapped_column(Date)
     window_start_utc: Mapped[datetime]
     window_end_utc: Mapped[datetime]

@@ -1,0 +1,203 @@
+{
+ "bizCode": 10000,
+ "message": "0#0",
+ "data": {
+  "totalNum": 1069,
+  "tournaments": [
+   {
+    "id": "sr:tournament:23755",
+    "name": "UEFA Nations League",
+    "events": [
+     {
+      "eventId": "sr:match:68932504",
+      "gameId": "20015",
+      "estimateStartTime": 1790448300000,
+      "status": 3,
+      "setScore": "2:0",
+      "gameScore": [
+       "2:0",
+       "0:0"
+      ],
+      "pointScore": "[\"2:0\",\"0:0\"]",
+      "matchStatus": "Ended",
+      "homeTeamName": "Albania",
+      "awayTeamName": "Belarus",
+      "sport": {
+       "id": "sr:sport:1",
+       "name": "Football",
+       "category": {
+        "id": "sr:category:4",
+        "name": "International",
+        "tournament": {
+         "id": "sr:tournament:23755",
+         "name": "UEFA Nations League"
+        }
+       }
+      },
+      "regularTimeScore": [
+       "2:0"
+      ],
+      "ai": false,
+      "bgEvent": false,
+      "matchTrackerNotAllowed": false,
+      "eventSource": {
+       "preMatchSource": {
+        "sourceType": "BET_RADAR",
+        "sourceId": "68932504"
+       },
+       "liveSource": {
+        "sourceType": "BET_GENIUS",
+        "sourceId": "111111113590550"
+       }
+      },
+      "containsPcbb": false,
+      "banned": false
+     },
+     {
+      "eventId": "sr:match:68931644",
+      "gameId": "45421",
+      "estimateStartTime": 1790448300000,
+      "status": 3,
+      "setScore": "1:2",
+      "gameScore": [
+       "0:0",
+       "1:2"
+      ],
+      "pointScore": "[\"0:0\",\"1:2\"]",
+      "matchStatus": "Ended",
+      "homeTeamName": "Czechia",
+      "awayTeamName": "Croatia",
+      "sport": {
+       "id": "sr:sport:1",
+       "name": "Football",
+       "category": {
+        "id": "sr:category:4",
+        "name": "International",
+        "tournament": {
+         "id": "sr:tournament:23755",
+         "name": "UEFA Nations League"
+        }
+       }
+      },
+      "regularTimeScore": [
+       "0:0"
+      ],
+      "ai": false,
+      "bgEvent": false,
+      "matchTrackerNotAllowed": false,
+      "eventSource": {
+       "preMatchSource": {
+        "sourceType": "BET_RADAR",
+        "sourceId": "68931644"
+       },
+       "liveSource": {
+        "sourceType": "BET_GENIUS",
+        "sourceId": "111111113596750"
+       }
+      },
+      "containsPcbb": false,
+      "banned": false
+     }
+    ],
+    "categoryName": "International",
+    "categoryId": "sr:category:4"
+   },
+   {
+    "id": "sr:tournament:1848",
+    "name": "Africa Cup of Nations Qualification",
+    "events": [
+     {
+      "eventId": "sr:match:74372496",
+      "gameId": "37173",
+      "estimateStartTime": 1790427600000,
+      "status": 3,
+      "setScore": "1:1",
+      "gameScore": [
+       "0:1",
+       "1:0"
+      ],
+      "matchStatus": "Ended",
+      "homeTeamName": "Kenya",
+      "awayTeamName": "Eritrea",
+      "sport": {
+       "id": "sr:sport:1",
+       "name": "Football",
+       "category": {
+        "id": "sr:category:4",
+        "name": "International",
+        "tournament": {
+         "id": "sr:tournament:1848",
+         "name": "Africa Cup of Nations Qualification"
+        }
+       }
+      },
+      "regularTimeScore": [
+       "0:1"
+      ],
+      "ai": false,
+      "bgEvent": false,
+      "matchTrackerNotAllowed": false,
+      "eventSource": {
+       "preMatchSource": {
+        "sourceType": "BET_RADAR",
+        "sourceId": "74372496"
+       },
+       "liveSource": {
+        "sourceType": "BET_RADAR",
+        "sourceId": "74372496"
+       }
+      },
+      "containsPcbb": false,
+      "banned": false
+     },
+     {
+      "eventId": "sr:match:74372498",
+      "gameId": "48843",
+      "estimateStartTime": 1790427600000,
+      "status": 3,
+      "setScore": "2:1",
+      "gameScore": [
+       "1:0",
+       "1:1"
+      ],
+      "matchStatus": "Ended",
+      "homeTeamName": "South Africa",
+      "awayTeamName": "Guinea",
+      "sport": {
+       "id": "sr:sport:1",
+       "name": "Football",
+       "category": {
+        "id": "sr:category:4",
+        "name": "International",
+        "tournament": {
+         "id": "sr:tournament:1848",
+         "name": "Africa Cup of Nations Qualification"
+        }
+       }
+      },
+      "regularTimeScore": [
+       "1:0"
+      ],
+      "ai": false,
+      "bgEvent": false,
+      "matchTrackerNotAllowed": false,
+      "eventSource": {
+       "preMatchSource": {
+        "sourceType": "BET_RADAR",
+        "sourceId": "74372498"
+       },
+       "liveSource": {
+        "sourceType": "BET_RADAR",
+        "sourceId": "74372498"
+       }
+      },
+      "containsPcbb": false,
+      "banned": false
+     }
+    ],
+    "categoryName": "International",
+    "categoryId": "sr:category:4"
+   }
+  ]
+ }
+}

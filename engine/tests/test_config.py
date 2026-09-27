@@ -22,7 +22,7 @@ def _base_text() -> str:
 def test_real_settings_load() -> None:
     s = load_settings()
     assert s.general.timezone == "Africa/Lagos"
-    assert s.leagues.enabled == ["EPL", "LALIGA", "SERIEA", "BUNDES", "LIGUE1"]
+    assert s.leagues.enabled == ["EPL", "LALIGA", "SERIEA", "BUNDES", "LIGUE1", "INTL"]  # docs/09
     assert s.model.rho_bounds == (-0.2, 0.2)
     assert s.slips.daily_2odds.target_odds_max == 2.30
     assert s.slips.mega_acca.weekend_start == "Fri 18:00"
@@ -41,6 +41,7 @@ def test_settings_file_has_exactly_the_documented_sections() -> None:
         "slips",
         "backtest",
         "gates",
+        "booking",  # docs/04 §3.4 drift threshold (docs/discovered/sportybet/2026-09-27/booking.md)
         "api",
     }
     assert set(data["slips"]) == {"daily_2odds", "mid_acca", "mega_acca"}

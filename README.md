@@ -51,5 +51,16 @@ make settle       # next day: fetch results, settle legs and slips
 | `make odds` / `picks` / `book` | individual steps of `make daily` |
 | `make api` / `make dashboard` | run one half of `make dev` |
 
+## Team names
+
+Team names are matched exactly, never by guessing. football-data.co.uk spellings
+are canonical. Every Understat/SportyBet spelling must be listed in
+`engine/src/engine/mapping/aliases_seed.toml`. If `make ingest` or `make map-teams`
+reports unresolved names, review `data/reports/alias_proposals.toml`, copy the
+correct lines into the seed file, and re-run `make map-teams` then `make ingest`.
+
+Raw downloads are cached under `data/raw/<source>/<date>/`. Finished seasons are
+not downloaded again; the current season is refreshed once per day.
+
 After a schema migration, regenerate the dashboard's DB types with
 `cd dashboard && pnpm db:pull`.

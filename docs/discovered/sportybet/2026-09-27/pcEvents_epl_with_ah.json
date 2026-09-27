@@ -1,0 +1,261 @@
+{
+ "bizCode": 10000,
+ "message": "0#0",
+ "data": [
+  {
+   "id": "sr:tournament:17",
+   "name": "Premier League",
+   "events": [
+    {
+     "eventId": "sr:match:72221292",
+     "gameId": "29490",
+     "productStatus": "0#0",
+     "estimateStartTime": 1791631800000,
+     "status": 0,
+     "matchStatus": "Not start",
+     "homeTeamId": "sr:competitor:42",
+     "homeTeamName": "Arsenal",
+     "awayTeamName": "Leeds United",
+     "awayTeamId": "sr:competitor:34",
+     "sport": {
+      "id": "sr:sport:1",
+      "name": "Football",
+      "category": {
+       "id": "sr:category:1",
+       "name": "England",
+       "tournament": {
+        "id": "sr:tournament:17",
+        "name": "Premier League"
+       }
+      }
+     },
+     "totalMarketSize": 343,
+     "markets": [
+      {
+       "id": "1",
+       "product": 3,
+       "desc": "1X2",
+       "status": 0,
+       "group": "Main",
+       "groupId": "171121135724MGI11262166",
+       "title": "1,X,2",
+       "name": "1X2",
+       "favourite": 0,
+       "outcomes": [
+        {
+         "id": "1",
+         "odds": "1.44",
+         "isActive": 1,
+         "desc": "Home",
+         "oddsBoostLfb": false
+        },
+        {
+         "id": "2",
+         "odds": "4.85",
+         "isActive": 1,
+         "desc": "Draw",
+         "oddsBoostLfb": true
+        },
+        {
+         "id": "3",
+         "odds": "7.24",
+         "isActive": 1,
+         "desc": "Away",
+         "oddsBoostLfb": true
+        }
+       ],
+       "farNearOdds": 0,
+       "marketExtendVOS": [
+        {
+         "name": "2UP",
+         "rootMarketId": "1",
+         "nodeMarketId": "60100",
+         "notSupport": false
+        },
+        {
+         "name": "1UP",
+         "rootMarketId": "1",
+         "nodeMarketId": "60200",
+         "notSupport": false
+        }
+       ],
+       "sourceType": "BET_RADAR",
+       "lastOddsChangeTime": 1790449974912,
+       "earlyPayoutMarkets": [
+        {
+         "name": "1UP",
+         "sourceMarketId": "1",
+         "sourceSpecifier": "",
+         "mappedMarketId": "60200",
+         "mappedSpecifier": "",
+         "supported": true
+        },
+        {
+         "name": "2UP",
+         "sourceMarketId": "1",
+         "sourceSpecifier": "",
+         "mappedMarketId": "60100",
+         "mappedSpecifier": "",
+         "supported": true
+        },
+        {
+         "name": "one_x_two_never_down",
+         "sourceMarketId": "1",
+         "sourceSpecifier": "",
+         "mappedMarketId": "60210",
+         "mappedSpecifier": "",
+         "supported": true
+        }
+       ],
+       "banned": false
+      },
+      {
+       "id": "18",
+       "specifier": "total=2",
+       "product": 3,
+       "desc": "Over/Under",
+       "status": 0,
+       "group": "Main",
+       "groupId": "171121135724MGI11262166",
+       "title": "Goals,Over,Under",
+       "name": "Over/Under",
+       "favourite": 0,
+       "outcomes": [
+        {
+         "id": "12",
+         "odds": "1.31",
+         "isActive": 1,
+         "desc": "Over 2"
+        },
+        {
+         "id": "13",
+         "odds": "3.33",
+         "isActive": 1,
+         "desc": "Under 2"
+        }
+       ],
+       "farNearOdds": 0,
+       "sourceType": "BET_RADAR",
+       "lastOddsChangeTime": 1790503180000,
+       "banned": false
+      },
+      {
+       "id": "18",
+       "specifier": "total=2.5",
+       "product": 3,
+       "desc": "Over/Under",
+       "status": 0,
+       "group": "Main",
+       "groupId": "171121135724MGI11262166",
+       "title": "Goals,Over,Under",
+       "name": "Over/Under",
+       "favourite": 0,
+       "outcomes": [
+        {
+         "id": "12",
+         "odds": "1.68",
+         "isActive": 1,
+         "desc": "Over 2.5"
+        },
+        {
+         "id": "13",
+         "odds": "2.15",
+         "isActive": 1,
+         "desc": "Under 2.5"
+        }
+       ],
+       "farNearOdds": 0,
+       "sourceType": "BET_RADAR",
+       "lastOddsChangeTime": 1790503180000,
+       "earlyPayoutMarkets": [
+        {
+         "name": "over_under",
+         "sourceMarketId": "18",
+         "sourceSpecifier": "total=2.5",
+         "mappedMarketId": "60180",
+         "mappedSpecifier": "minsnr=30|total=2.5",
+         "supported": true
+        }
+       ],
+       "banned": false
+      },
+      {
+       "id": "16",
+       "specifier": "hcp=-0.5",
+       "product": 3,
+       "desc": "Asian Handicap -0.5",
+       "status": 0,
+       "group": "Main",
+       "groupId": "171121135724MGI11262166",
+       "title": "1,2",
+       "name": "Handicap",
+       "favourite": 0,
+       "outcomes": [
+        {
+         "id": "1714",
+         "odds": "1.41",
+         "isActive": 1,
+         "desc": "Home (-0.5)"
+        },
+        {
+         "id": "1715",
+         "odds": "2.80",
+         "isActive": 1,
+         "desc": "Away (+0.5)"
+        }
+       ],
+       "farNearOdds": 0,
+       "sourceType": "BET_RADAR",
+       "lastOddsChangeTime": 1790503180000,
+       "banned": false
+      },
+      {
+       "id": "16",
+       "specifier": "hcp=0.5",
+       "product": 3,
+       "desc": "Asian Handicap 0.5",
+       "status": 0,
+       "group": "Main",
+       "groupId": "171121135724MGI11262166",
+       "title": "1,2",
+       "name": "Handicap",
+       "favourite": 0,
+       "outcomes": [
+        {
+         "id": "1714",
+         "odds": "1.11",
+         "isActive": 1,
+         "desc": "Home (+0.5)"
+        },
+        {
+         "id": "1715",
+         "odds": "6.00",
+         "isActive": 1,
+         "desc": "Away (-0.5)"
+        }
+       ],
+       "farNearOdds": -1,
+       "sourceType": "BET_RADAR",
+       "lastOddsChangeTime": 1790503180000,
+       "banned": false
+      }
+     ],
+     "bookingStatus": "Unavailable",
+     "topTeam": false,
+     "fixtureVenue": {
+      "name": "Emirates Stadium"
+     },
+     "giftGrabActivityResultVO": "…trimmed…",
+     "ai": false,
+     "bgEvent": false,
+     "matchTrackerNotAllowed": false,
+     "eventSource": "…trimmed…",
+     "containsPcbb": false,
+     "banned": false
+    }
+   ],
+   "categoryName": "England",
+   "categoryId": "sr:category:1"
+  }
+ ]
+}

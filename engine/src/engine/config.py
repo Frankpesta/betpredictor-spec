@@ -41,21 +41,41 @@ LOGS_DIR: Path = ROOT / "data" / "logs"
 class LeagueDef:
     key: str
     name: str
-    fd_code: str
+    fd_code: str | None  # football-data.co.uk division; None for INTL
     understat_key: str | None
+    # SportyBet (Sportradar) tournament ids — docs/discovered/sportybet/2026-09-27/endpoints.md F2
+    sb_tournaments: tuple[str, ...] = ()
+    international: bool = False
 
 
-# docs/01 §2 — the only competitions the system knows about.
+# docs/01 §2 + docs/09 — the only competitions the system knows about.
 LEAGUES: dict[str, LeagueDef] = {
     d.key: d
     for d in (
-        LeagueDef("EPL", "Premier League", "E0", "EPL"),
-        LeagueDef("LALIGA", "La Liga", "SP1", "La_liga"),
-        LeagueDef("SERIEA", "Serie A", "I1", "Serie_A"),
-        LeagueDef("BUNDES", "Bundesliga", "D1", "Bundesliga"),
-        LeagueDef("LIGUE1", "Ligue 1", "F1", "Ligue_1"),
+        LeagueDef("EPL", "Premier League", "E0", "EPL", ("sr:tournament:17",)),
+        LeagueDef("LALIGA", "La Liga", "SP1", "La_liga", ("sr:tournament:8",)),
+        LeagueDef("SERIEA", "Serie A", "I1", "Serie_A", ("sr:tournament:23",)),
+        LeagueDef("BUNDES", "Bundesliga", "D1", "Bundesliga", ("sr:tournament:35",)),
+        LeagueDef("LIGUE1", "Ligue 1", "F1", "Ligue_1", ("sr:tournament:34",)),
         LeagueDef("CHAMP", "Championship", "E1", None),
         LeagueDef("ERED", "Eredivisie", "N1", None),
+        # Men's A internationals (docs/09). SportyBet category sr:category:4; women's,
+        # youth and outright-only tournaments are deliberately not listed.
+        LeagueDef(
+            "INTL",
+            "International (men's A)",
+            None,
+            None,
+            (
+                "sr:tournament:23755",  # UEFA Nations League
+                "sr:tournament:1848",  # Africa Cup of Nations Qualification
+                "sr:tournament:851",  # Int. Friendly Games
+                "sr:tournament:27420",  # CONCACAF Nations League
+                "sr:tournament:622",  # Gulf Cup
+                "sr:tournament:53324",  # FIFA ASEAN Cup
+            ),
+            international=True,
+        ),
     )
 }
 
@@ -216,6 +236,12 @@ class BacktestCfg(_Strict):
     refit_every_days: int = Field(gt=0)
     odds_source: str
     closing_source: str
+    closing_fallback: str
+    tuning_refit_every_days: int = Field(gt=0)
+    grid_xi_per_day: list[float] = Field(min_length=1)
+    grid_xg_blend_weight: list[float] = Field(min_length=1)
+    grid_market_shrink_weight: list[float] = Field(min_length=1)
+    grid_min_edge_leg: list[float] = Field(min_length=1)
 
     @field_validator("test_seasons")
     @classmethod
@@ -228,6 +254,10 @@ class GatesCfg(_Strict):
     min_bets_for_roi: int = Field(ge=1)
     min_roi: float
     require_beats_market_logloss: bool
+
+
+class BookingCfg(_Strict):
+    max_odds_drift: float = Field(gt=0, lt=1)
 
 
 class ApiCfg(_Strict):
@@ -253,6 +283,7 @@ class Settings(BaseSettings):
     slips: SlipsCfg
     backtest: BacktestCfg
     gates: GatesCfg
+    booking: BookingCfg
     api: ApiCfg
 
     @classmethod

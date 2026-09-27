@@ -5,7 +5,7 @@ raw_dir = "data/raw"
 reports_dir = "data/reports"
 
 [leagues]
-enabled = ["EPL", "LALIGA", "SERIEA", "BUNDES", "LIGUE1"]
+enabled = ["EPL", "LALIGA", "SERIEA", "BUNDES", "LIGUE1", "INTL"]   # INTL: docs/09 (unvalidated, INTL-only slips)
 history_seasons = ["2019-20","2020-21","2021-22","2022-23","2023-24","2024-25","2025-26","2026-27"]
 
 [scraping]
@@ -18,16 +18,16 @@ headless = true
 
 [model]
 version = "dc-1.0.0"
-train_seasons_back = 3          # seasons of history used per fit
-xi_per_day = 0.0019             # time-decay; tuned by backtest
+train_seasons_back = 3          # training window = train_seasons_back x 365 days before the fit date
+xi_per_day = 0.001              # time-decay; tuned by backtest (2026-09-27, run #3; lowest grid value)
 ridge_lambda = 0.5              # L2 penalty on attack/defence params
-max_goals = 10                  # score matrix is (max_goals+1)^2
+max_goals = 25                  # score matrix is (max_goals+1)^2; tail check (1e-4) valid to ~11 expected goals (user decision 2026-09-27: clubs reach 5.3, INTL minnow games ~8)
 xg_blend_weight = 0.5           # weight on goals-model log-rates; 1-w on xG-model
 rho_bounds = [-0.2, 0.2]
 min_team_matches = 8            # below this, team is flagged low-confidence
 
 [value]
-market_shrink_weight = 0.7      # p_final = w*p_model + (1-w)*p_market_devig ; tuned by backtest
+market_shrink_weight = 0.3      # p_final = w*p_model + (1-w)*p_market_devig ; tuned by backtest (2026-09-27, run #3)
 min_edge_leg = 0.03
 max_model_market_gap = 0.15     # abs(p_final - p_market_devig) above this => flagged
 min_odds = 1.20
@@ -64,12 +64,22 @@ test_seasons = ["2023-24","2024-25","2025-26"]
 refit_every_days = 7
 odds_source = "B365"            # bet price
 closing_source = "PS"           # CLV benchmark (Pinnacle closing)
+closing_fallback = "AVG"        # used where closing_source has no odds (Pinnacle stops Jan 2026)
+# docs/03 §10.3 tuning grid (tuning seasons = test_seasons minus the last; holdout = the last)
+tuning_refit_every_days = 14
+grid_xi_per_day = [0.0010, 0.0015, 0.0019, 0.0025, 0.0035]
+grid_xg_blend_weight = [0.3, 0.5, 0.7, 1.0]
+grid_market_shrink_weight = [0.3, 0.5, 0.7, 1.0]
+grid_min_edge_leg = [0.02, 0.03, 0.05]
 
 [gates]
 max_calibration_ece = 0.03
 min_bets_for_roi = 400
 min_roi = 0.0                   # must be > this
 require_beats_market_logloss = false
+
+[booking]
+max_odds_drift = 0.03          # docs/04 §3.4: re-check at booking; a larger move (or suspension) -> failed, no booking
 
 [api]
 host = "127.0.0.1"

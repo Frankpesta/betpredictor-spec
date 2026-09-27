@@ -6,6 +6,7 @@ from pathlib import Path
 import pytest
 from sqlalchemy import select
 
+from engine import jobs
 from engine.config import get_settings
 from engine.db.models import JobRun, League
 from engine.db.session import session_scope
@@ -43,10 +44,18 @@ def test_failure_records_traceback_and_reraises(migrated_db: Path) -> None:
     assert json.loads(run.summary_json or "{}") == {"fetched": 2}
 
 
-def test_unbuilt_job_fails_loudly(migrated_db: Path) -> None:
-    with pytest.raises(NotImplementedError, match="Phase 2"):
-        run_job("fit", db_path=migrated_db)
-    assert _runs(migrated_db)[-1].status == "failed"
+def test_failing_job_is_recorded_and_reraised(
+    migrated_db: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    def broken(ctx: jobs.JobContext) -> None:
+        raise RuntimeError("upstream exploded")
+
+    monkeypatch.setitem(jobs.JOBS, "settle", broken)
+    with pytest.raises(RuntimeError, match="upstream exploded"):
+        run_job("settle", db_path=migrated_db)
+    run = _runs(migrated_db)[-1]
+    assert (run.job_name, run.status) == ("settle", "failed")
+    assert "upstream exploded" in (run.error or "")
 
 
 def test_unknown_job_rejected(migrated_db: Path) -> None:
@@ -54,10 +63,10 @@ def test_unknown_job_rejected(migrated_db: Path) -> None:
         run_job("place-bets", db_path=migrated_db)
 
 
-def test_leagues_synced_from_settings(migrated_db: Path) -> None:
-    with pytest.raises(NotImplementedError):
-        run_job("ingest", db_path=migrated_db)
+def test_leagues_synced_from_settings(migrated_db: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setitem(jobs.JOBS, "settle", lambda ctx: None)
+    run_job("settle", db_path=migrated_db)
     with session_scope(migrated_db) as s:
         leagues = {lg.key: lg.enabled for lg in s.scalars(select(League))}
-    assert set(leagues) == {"EPL", "LALIGA", "SERIEA", "BUNDES", "LIGUE1", "CHAMP", "ERED"}
+    assert set(leagues) == {"EPL", "LALIGA", "SERIEA", "BUNDES", "LIGUE1", "CHAMP", "ERED", "INTL"}
     assert {k for k, v in leagues.items() if v} == set(get_settings().leagues.enabled)
