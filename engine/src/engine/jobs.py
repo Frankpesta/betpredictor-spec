@@ -44,6 +44,8 @@ class JobContext:
     settings: Settings
     db_path: Path | None = None
     summary: dict[str, Any] = field(default_factory=dict)
+    # Optional job arguments (e.g. `book` restricted to one slip by the API's rebook).
+    params: dict[str, Any] = field(default_factory=dict)
 
     def count(self, key: str, n: int = 1) -> None:
         self.summary[key] = self.summary.get(key, 0) + n
@@ -65,17 +67,33 @@ def _to_json(summary: dict[str, Any]) -> str:
     return json.dumps(summary, default=str, sort_keys=True)
 
 
-@contextmanager
-def job_run(
-    name: str, settings: Settings | None = None, db_path: Path | None = None
-) -> Iterator[JobContext]:
-    settings = settings or get_settings()
+def create_job_run(name: str, db_path: Path | None = None) -> int:
+    """Insert a `running` job_runs row; return its id (the API replies with it before running)."""
     with session_scope(db_path) as s:
         row = JobRun(job_name=name, started_at=utcnow(), status="running")
         s.add(row)
         s.flush()
-        run_id = row.id
-    ctx = JobContext(job_run_id=run_id, name=name, settings=settings, db_path=db_path)
+        return row.id
+
+
+@contextmanager
+def job_run(
+    name: str,
+    settings: Settings | None = None,
+    db_path: Path | None = None,
+    run_id: int | None = None,
+    params: dict[str, Any] | None = None,
+) -> Iterator[JobContext]:
+    settings = settings or get_settings()
+    if run_id is None:
+        run_id = create_job_run(name, db_path)
+    ctx = JobContext(
+        job_run_id=run_id,
+        name=name,
+        settings=settings,
+        db_path=db_path,
+        params=dict(params or {}),
+    )
     log.info("job started", extra={"fields": {"job": name, "job_run_id": run_id}})
     try:
         yield ctx
@@ -277,8 +295,18 @@ DAILY_SEQUENCE = ("odds", "picks", "book")
 JOB_NAMES = (*JOBS, "daily")
 
 
-def run_job(name: str, settings: Settings | None = None, db_path: Path | None = None) -> int:
-    """Run one job (or the `daily` sequence) synchronously; return its job_run id."""
+def run_job(
+    name: str,
+    settings: Settings | None = None,
+    db_path: Path | None = None,
+    run_id: int | None = None,
+    params: dict[str, Any] | None = None,
+) -> int:
+    """Run one job (or the `daily` sequence) synchronously; return its job_run id.
+
+    `run_id` reuses a row made by `create_job_run` (the API path); `params` are passed
+    to the job through `JobContext.params`.
+    """
     if name not in JOB_NAMES:
         raise ValueError(f"unknown job {name!r}; choose from {', '.join(JOB_NAMES)}")
     settings = settings or get_settings()
@@ -286,13 +314,13 @@ def run_job(name: str, settings: Settings | None = None, db_path: Path | None = 
         sync_leagues(s, settings)
 
     if name == "daily":
-        with job_run("daily", settings, db_path) as ctx:
+        with job_run("daily", settings, db_path, run_id) as ctx:
             for step in DAILY_SEQUENCE:
                 child = run_job(step, settings, db_path)
                 ctx.summary.setdefault("steps", {})[step] = child
         return ctx.job_run_id
 
-    with job_run(name, settings, db_path) as ctx:
+    with job_run(name, settings, db_path, run_id, params) as ctx:
         JOBS[name](ctx)
     return ctx.job_run_id
 

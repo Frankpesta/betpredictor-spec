@@ -17,7 +17,8 @@ export type DbResult = { ok: true; db: Db } | { ok: false; error: string; dbPath
 const globalForDb = globalThis as unknown as { __bpDb?: Db };
 
 export function dbPath(): string {
-  return path.resolve(process.cwd(), process.env.DB_PATH ?? "../data/betpredictor.db");
+  // Runtime path outside the app: keep Turbopack from tracing it into the build.
+  return path.resolve(/*turbopackIgnore: true*/ process.cwd(), process.env.DB_PATH ?? "../data/betpredictor.db");
 }
 
 /**

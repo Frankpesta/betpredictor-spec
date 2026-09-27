@@ -181,13 +181,11 @@ def run_book(ctx: JobContext) -> str:
     counts = {"booked": 0, "failed": 0}
     try:
         with session_scope(ctx.db_path) as s:
-            slip_ids = list(
-                s.scalars(
-                    select(Slip.id)
-                    .where(Slip.booking_status == "pending", Slip.status == "open")
-                    .order_by(Slip.id)
-                )
-            )
+            query = select(Slip.id).where(Slip.booking_status == "pending", Slip.status == "open")
+            only = ctx.params.get("slip_id")
+            if only is not None:  # API rebook: just this slip
+                query = query.where(Slip.id == int(only))
+            slip_ids = list(s.scalars(query.order_by(Slip.id)))
         for slip_id in slip_ids:
             with session_scope(ctx.db_path) as s:
                 slip = s.get_one(Slip, slip_id)

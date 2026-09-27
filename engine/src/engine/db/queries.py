@@ -7,8 +7,18 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from engine.backtest.walk_forward import ClosingOdds, MatchMarkets
-from engine.db.models import HistoricalOdds, League, Match, Team
+from engine.db.models import BacktestRun, HistoricalOdds, League, Match, Team
 from engine.model.league import LeagueMatches
+
+
+def latest_gate_passed(session: Session) -> int | None:
+    """`gate_passed` of the latest finished backtest; None if none has run (docs/03 §10.5)."""
+    return session.scalars(
+        select(BacktestRun.gate_passed)
+        .where(BacktestRun.finished_at.is_not(None))
+        .order_by(BacktestRun.finished_at.desc(), BacktestRun.id.desc())
+        .limit(1)
+    ).first()
 
 
 def league_by_key(session: Session, key: str) -> League:

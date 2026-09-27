@@ -1,18 +1,9 @@
-import { eq } from "drizzle-orm";
-
-import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { SlipCard } from "@/components/slip-card";
+import { DbMissing, PageHeader } from "@/components/status-bits";
 import { getDb } from "@/db/client";
-import { slips } from "@/db/generated/schema";
-import { lagosToday, odds2, pct1, pct4sig } from "@/lib/format";
-
-type SlipRow = typeof slips.$inferSelect;
-
-const SLIP_CARDS = [
-  { type: "daily_2odds", title: "Daily 2-odds", highRisk: false },
-  { type: "mid_acca", title: "Mid accumulator", highRisk: false },
-  { type: "mega_acca", title: "Mega accumulator", highRisk: true },
-] as const;
+import { latestGate, todaysSlips } from "@/db/queries";
+import { lagosToday, toDbUtc } from "@/lib/format";
+import { POOL_LABEL, SLIP_TYPES } from "@/lib/labels";
 
 export default async function TodayPage() {
   const today = lagosToday();
@@ -20,61 +11,55 @@ export default async function TodayPage() {
 
   if (!res.ok) {
     return (
-      <div className="space-y-2">
-        <h1 className="text-2xl font-semibold">Today</h1>
-        <Card>
-          <CardHeader>
-            <CardTitle>Database not found</CardTitle>
-            <CardDescription>
-              Run <code>make migrate</code> to create it. Expected at <code>{res.dbPath}</code>.
-            </CardDescription>
-          </CardHeader>
-        </Card>
+      <div className="space-y-6">
+        <PageHeader eyebrow="Daily slips" title="Today" />
+        <DbMissing dbPath={res.dbPath} error={res.error} />
       </div>
     );
   }
 
-  const todays: SlipRow[] = res.db.select().from(slips).where(eq(slips.slipDate, today)).all();
+  const slips = todaysSlips(res.db, today, toDbUtc(new Date()));
+  const edgeValidated = latestGate(res.db).gatePassed === 1;
+  const hasIntl = slips.some((s) => s.pool === "intl");
 
   return (
-    <div className="space-y-4">
-      <div>
-        <h1 className="text-2xl font-semibold">Today</h1>
-        <p className="text-sm text-muted-foreground">Slips for {today} (Africa/Lagos)</p>
-      </div>
-      <div className="grid gap-4 md:grid-cols-3">
-        {SLIP_CARDS.map(({ type, title, highRisk }) => {
-          const slip = todays.find((s) => s.slipType === type);
-          return (
-            <Card key={type}>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  {title}
-                  {highRisk && <Badge variant="destructive">High risk</Badge>}
-                </CardTitle>
-                {slip ? (
-                  <CardDescription>
-                    Total odds {odds2(slip.totalOdds)} · win probability{" "}
-                    {type === "mega_acca" ? pct4sig(slip.pAllWin) : pct1(slip.pAllWin)} ·{" "}
-                    {slip.mode}
-                  </CardDescription>
-                ) : (
-                  <CardDescription>
-                    No qualifying slip today — the model found no value, or picks have not been
-                    run yet. Run <code>make daily</code>.
-                  </CardDescription>
-                )}
-              </CardHeader>
-              {slip && (
-                <CardContent className="text-sm">
-                  Booking: {slip.bookingStatus}
-                  {slip.bookingCode ? ` · ${slip.bookingCode}` : ""}
-                </CardContent>
-              )}
-            </Card>
-          );
-        })}
-      </div>
+    <div className="space-y-10">
+      <PageHeader eyebrow={`${today} · Africa/Lagos`} title="Today">
+        Slips are paper bets unless you mark them placed.
+        {slips.length === 0 && (
+          <>
+            {" "}
+            No slips today. If today&apos;s run has not happened yet, press <strong>Run daily</strong> (or{" "}
+            <code>make daily</code>); if it has, the model found no value — see Fixtures and Data health for
+            details.
+          </>
+        )}
+      </PageHeader>
+      {(["club", ...(hasIntl ? ["intl"] : [])] as const).map((pool) => (
+        <section key={pool} className="space-y-4">
+          <div className="flex items-center gap-3">
+            <h2 className="text-lg font-bold">{POOL_LABEL[pool]}</h2>
+            <div className="h-px flex-1 bg-gradient-to-r from-border to-transparent" />
+          </div>
+          {pool === "intl" && (
+            <p className="text-sm text-muted-foreground">
+              International slips use only international legs and are never mixed with club legs.
+              The international model is unvalidated (no historical odds to backtest against).
+            </p>
+          )}
+          <div className="grid gap-6">
+            {SLIP_TYPES.map((type) => (
+              <SlipCard
+                key={type}
+                slipType={type}
+                pool={pool}
+                slip={slips.find((s) => s.slipType === type && s.pool === pool)}
+                edgeValidated={edgeValidated}
+              />
+            ))}
+          </div>
+        </section>
+      ))}
     </div>
   );
 }

@@ -1,33 +1,41 @@
 """Local FastAPI engine API (docs/07 §1). Bound to 127.0.0.1 only.
 
-Phase 0 provides `/health` plus the Host-header and CORS guards; job and slip
-routes arrive in Phase 7.
+`/health`, the Host-header and CORS guards live here; job routes are in
+`routes_jobs`, slip + alias routes in `routes_slips`, settled-leg calibration
+in `routes_performance`.
 """
 
 from __future__ import annotations
 
 from collections.abc import Awaitable, Callable
+from pathlib import Path
 from typing import Any
 
 import uvicorn
 from fastapi import FastAPI, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
-from sqlalchemy import select
 
-from engine.config import get_settings
-from engine.db.models import BacktestRun
+from engine.api import routes_jobs, routes_performance, routes_slips
+from engine.api.routes_jobs import JobRunner
+from engine.config import Settings, get_settings
+from engine.db.queries import latest_gate_passed
 from engine.db.session import session_scope
 
 DASHBOARD_ORIGIN = "http://localhost:3000"
 
 
-def create_app() -> FastAPI:
-    settings = get_settings()
+def create_app(settings: Settings | None = None, db_path: Path | None = None) -> FastAPI:
+    """`db_path` overrides the configured DB (tests); None uses settings.db_file."""
+    settings = settings or get_settings()
     port = settings.api.port
     allowed_hosts = {f"127.0.0.1:{port}", f"localhost:{port}"}
 
     app = FastAPI(title="BetPredictor engine", docs_url="/docs", redoc_url=None)
+    app.state.runner = JobRunner(settings, db_path)
+    app.include_router(routes_jobs.router)
+    app.include_router(routes_slips.router)
+    app.include_router(routes_performance.router)
     app.add_middleware(
         CORSMiddleware,
         allow_origins=[DASHBOARD_ORIGIN],
@@ -45,19 +53,14 @@ def create_app() -> FastAPI:
 
     @app.get("/health")
     def health() -> dict[str, Any]:
-        with session_scope() as s:
-            latest = s.scalars(
-                select(BacktestRun)
-                .where(BacktestRun.finished_at.is_not(None))
-                .order_by(BacktestRun.finished_at.desc())
-                .limit(1)
-            ).first()
-            gate = None if latest is None else latest.gate_passed
+        with session_scope(db_path) as s:
+            gate = latest_gate_passed(s)
         return {
             "ok": True,
-            "db_path": str(settings.db_file),
+            "db_path": str(db_path or settings.db_file),
             "model_version": settings.model.version,
             "gate_passed": gate,
+            "job_running": app.state.runner.busy,
         }
 
     return app

@@ -50,6 +50,20 @@ make settle       # next day: fetch results, settle legs and slips
 | `make discover` | SportyBet discovery (headed browser, interactive) |
 | `make odds` / `picks` / `book` | individual steps of `make daily` |
 | `make api` / `make dashboard` | run one half of `make dev` |
+| `make seed-demo` | synthetic DEMO database at `data/tmp/demo.db` (never the real DB) |
+| `make dashboard-check` | render every dashboard page against an empty and a demo DB |
+
+## Dashboard
+
+`make dev`, then open http://localhost:3000 (use `localhost`, not `127.0.0.1`: the API
+only accepts requests from that origin). **Run daily** in the top bar does the same as
+`make daily`. On Today, each slip has Copy code, Rebook, Enter code manually (after a
+failed booking) and Mark as placed. While the backtest gate has not passed, marking a
+slip placed asks you to confirm first. Read-only pages also work from a phone on the
+same network. The buttons don't, because the API listens on this computer only.
+
+To try the dashboard on demo data: `make seed-demo`, then start the API with
+`BP_GENERAL__DB_PATH=data/tmp/demo.db` and the dashboard with `DB_PATH=../data/tmp/demo.db`.
 
 ## Team names
 
