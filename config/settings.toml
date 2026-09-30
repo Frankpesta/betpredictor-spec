@@ -3,6 +3,9 @@ timezone = "Africa/Lagos"
 db_path = "data/betpredictor.db"
 raw_dir = "data/raw"
 reports_dir = "data/reports"
+# Look-ahead for `make odds`, `make picks` and the dashboard fixtures page. The spec said 72 h
+# (docs/04 §2.2, docs/05 §1.2); the user chose 7 days on 2026-09-30 to see the next club round sooner.
+horizon_hours = 168
 
 [leagues]
 enabled = ["EPL", "LALIGA", "SERIEA", "BUNDES", "LIGUE1", "INTL"]   # INTL: docs/09 (unvalidated, INTL-only slips)
@@ -27,6 +30,12 @@ rho_bounds = [-0.2, 0.2]
 min_team_matches = 8            # below this, team is flagged low-confidence
 
 [value]
+# Leg selection strategy (user decision 2026-09-30, docs/05 §8):
+#   "likeliest" = rank by p_final; no edge, odds or slip-edge rules; AH legs only on the
+#                 favourite's side; sanity flags still exclude. min_edge_leg, min_odds,
+#                 max_odds and the slip edge floors below apply to "value" only.
+#   "value"     = the original docs/05 §2.2 rules.
+selection = "likeliest"
 market_shrink_weight = 0.3      # p_final = w*p_model + (1-w)*p_market_devig ; tuned by backtest (2026-09-27, run #3)
 min_edge_leg = 0.03
 max_model_market_gap = 0.15     # abs(p_final - p_market_devig) above this => flagged

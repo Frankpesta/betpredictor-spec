@@ -23,6 +23,7 @@ from engine.slips.constraints import (
     sort_legs,
     tie_break_key,
 )
+from engine.value.selection import Strategy
 
 # docs/05 §4: candidate pool is capped to the best 60 legs by tie-break order.
 DAILY_POOL_CAP = 60
@@ -34,16 +35,35 @@ class ChosenSlip:
     totals: SlipTotals
 
 
+def _useful_for_daily(leg: Leg, cfg: Daily2OddsCfg) -> bool:
+    """docs/05 §8: under "likeliest" the top legs by p_final are ~1.05 shots that can never
+    reach the odds target, so the pool keeps legs priced in [target_min^(1/max_legs),
+    target_max] before the cap (a leg below the floor needs a partner priced near the max)."""
+    floor: float = cfg.target_odds_min ** (1.0 / cfg.max_legs)
+    return floor <= leg.odds <= cfg.target_odds_max
+
+
 def best_daily_2odds(
-    legs: Sequence[Leg], cfg: Daily2OddsCfg, max_selections: int | None = None
+    legs: Sequence[Leg],
+    cfg: Daily2OddsCfg,
+    max_selections: int | None = None,
+    strategy: Strategy = "value",
 ) -> ChosenSlip | None:
     """Pick the feasible combination with the highest p_all_win (docs/05 §4).
 
     Window filtering is the caller's job (`daily_2odds` for live, per-day groups
     in the backtest). Returns None when nothing is feasible — never relaxes.
+    Under "likeliest" (docs/05 §8) the slip-edge floor does not apply.
     """
+    likeliest = strategy == "likeliest"
     pool = sort_legs(
-        [leg for leg in legs if leg.qualifies and leg.p_final >= cfg.min_leg_probability]
+        [
+            leg
+            for leg in legs
+            if leg.qualifies
+            and leg.p_final >= cfg.min_leg_probability
+            and (not likeliest or _useful_for_daily(leg, cfg))
+        ]
     )[:DAILY_POOL_CAP]
     max_legs = cfg.max_legs if max_selections is None else min(cfg.max_legs, max_selections)
 
@@ -55,7 +75,7 @@ def best_daily_2odds(
             t = slip_totals(combo)
             if not (cfg.target_odds_min <= t.total_odds <= cfg.target_odds_max):
                 continue
-            if t.edge < cfg.min_slip_edge:
+            if not likeliest and t.edge < cfg.min_slip_edge:
                 continue
             # Higher p_all_win, then higher edge, then the legs' tie-break order.
             key = (-t.p_all_win, -t.edge, tuple(tie_break_key(leg) for leg in combo))
@@ -65,12 +85,16 @@ def best_daily_2odds(
 
 
 def daily_2odds(
-    legs: Sequence[Leg], now: datetime, cfg: Daily2OddsCfg, max_selections: int | None = None
+    legs: Sequence[Leg],
+    now: datetime,
+    cfg: Daily2OddsCfg,
+    max_selections: int | None = None,
+    strategy: Strategy = "value",
 ) -> ChosenSlip | None:
     """Live daily slip: kickoffs from now + 15 min to now + window_hours."""
     start, end = now + MIN_LEAD, now + timedelta(hours=cfg.window_hours)
     return best_daily_2odds(
-        [leg for leg in legs if in_window(leg, start, end)], cfg, max_selections
+        [leg for leg in legs if in_window(leg, start, end)], cfg, max_selections, strategy
     )
 
 
@@ -90,9 +114,11 @@ def mid_acca(
     now: datetime,
     cfg: MidAccaCfg,
     max_selections: int = SPORTYBET_MAX_SELECTIONS,
+    strategy: Strategy = "value",
 ) -> ChosenSlip | None:
     """docs/05 §5, greedy in tie-break order. A leg that would take the running slip edge
-    below min_slip_edge is skipped and the next one tried (user decision 2026-09-27)."""
+    below min_slip_edge is skipped and the next one tried (user decision 2026-09-27).
+    Under "likeliest" (docs/05 §8) there is no slip-edge floor."""
     start, end = now + MIN_LEAD, now + MID_WINDOW
     pool = best_leg_per_match(
         [
@@ -108,7 +134,7 @@ def mid_acca(
     for leg in pool:
         if len(chosen) >= cap:
             break
-        if slip_totals([*chosen, leg]).edge >= cfg.min_slip_edge:
+        if strategy == "likeliest" or slip_totals([*chosen, leg]).edge >= cfg.min_slip_edge:
             chosen.append(leg)
     if len(chosen) < cfg.min_legs:
         return None
@@ -157,17 +183,23 @@ def mega_acca(
     min_odds: float,
     max_odds: float,
     max_selections: int = SPORTYBET_MAX_SELECTIONS,
+    strategy: Strategy = "value",
 ) -> ChosenSlip | None:
-    """docs/05 §6: top legs by tie-break order in the weekend window, ≥ 2 legs."""
+    """docs/05 §6: top legs by tie-break order in the weekend window, ≥ 2 legs.
+    Under "likeliest" (docs/05 §8) the pool is the qualifying legs (no edge/odds floors)."""
     start, end = window
+
+    def eligible(leg: Leg) -> bool:
+        if strategy == "likeliest":
+            return leg.qualifies
+        return leg.sanity_ok and leg.edge >= cfg.min_leg_edge and min_odds <= leg.odds <= max_odds
+
     pool = best_leg_per_match(
         [
             leg
             for leg in legs
-            if leg.sanity_ok
-            and leg.edge >= cfg.min_leg_edge
+            if eligible(leg)
             and leg.p_final >= cfg.min_leg_probability
-            and min_odds <= leg.odds <= max_odds
             and in_window(leg, start, end)
         ]
     )

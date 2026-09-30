@@ -99,6 +99,7 @@ class GeneralCfg(_Strict):
     db_path: str
     raw_dir: str
     reports_dir: str
+    horizon_hours: int = Field(gt=0)
 
     @field_validator("timezone")
     @classmethod
@@ -162,6 +163,7 @@ class ModelCfg(_Strict):
 
 
 class ValueCfg(_Strict):
+    selection: Literal["likeliest", "value"]
     market_shrink_weight: float = Field(ge=0, le=1)
     min_edge_leg: float
     max_model_market_gap: float = Field(gt=0, le=1)

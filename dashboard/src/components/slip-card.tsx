@@ -36,9 +36,16 @@ const TYPE_STYLE: Record<string, { icon: typeof Ticket; bar: string; chip: strin
   },
 };
 
-type Props = { slipType: string; pool: string; slip?: SlipWithLegs; edgeValidated: boolean };
+type Props = {
+  slipType: string;
+  pool: string;
+  slip?: SlipWithLegs;
+  edgeValidated: boolean;
+  /** docs/05 §8: the selection rule in settings (a slip carries its own `strategy`). */
+  strategy: string;
+};
 
-export function SlipCard({ slipType, pool, slip, edgeValidated }: Props) {
+export function SlipCard({ slipType, pool, slip, edgeValidated, strategy }: Props) {
   const mega = slipType === "mega_acca";
   const style = TYPE_STYLE[slipType] ?? TYPE_STYLE.daily_2odds;
   const Icon = style.icon;
@@ -58,13 +65,31 @@ export function SlipCard({ slipType, pool, slip, edgeValidated }: Props) {
               {slip.mode}
             </Badge>
           )}
+          {slip && (
+            <Badge
+              variant="secondary"
+              title={
+                slip.strategy === "likeliest"
+                  ? "Built from the most probable legs (docs/05 §8), not from value"
+                  : "Built from legs with estimated positive value (docs/05 §2.2)"
+              }
+            >
+              {slip.strategy === "likeliest" ? "Likeliest" : "Value"}
+            </Badge>
+          )}
           {slip && slip.status !== "open" && (
             <Badge variant="secondary" className="capitalize">
               {slip.status}
             </Badge>
           )}
         </CardTitle>
-        {!slip && <CardDescription>No qualifying slip today — the model found no value.</CardDescription>}
+        {!slip && (
+          <CardDescription>
+            {strategy === "value"
+              ? "No qualifying slip today — the model found no value."
+              : "No qualifying slip today — no combination met this slip's rules."}
+          </CardDescription>
+        )}
       </CardHeader>
       {slip && (
         <CardContent className="space-y-5">

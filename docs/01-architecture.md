@@ -239,6 +239,7 @@ rho_bounds = [-0.2, 0.2]
 min_team_matches = 8            # below this, team is flagged low-confidence
 
 [value]
+selection = "likeliest"        # "likeliest" | "value" — docs/05 §8 (user decision 2026-09-30)
 market_shrink_weight = 0.7      # p_final = w*p_model + (1-w)*p_market_devig ; tuned by backtest
 min_edge_leg = 0.03
 max_model_market_gap = 0.15     # abs(p_final - p_market_devig) above this => flagged

@@ -118,6 +118,12 @@ the dashboard: Run daily → see slips → copy code → mark placed.
 - Review `/performance` weekly: leg ROI, mean CLV, calibration, expected vs
   actual. Real money only if paper results agree with the backtest and CLV
   is positive. This is the user's decision; the tool only reports.
+- **Restarted 2026-09-30** when the user switched selection to "likeliest"
+  (docs/05 §8). Judge the likeliest period (from 2026-09-30) on its own:
+  `/performance` defaults to the active strategy. The backtest gate measured
+  the value rule, so it does not validate "likeliest"; for it, compare hit rate
+  with the average `p_final` and watch the expected multiplier (< 1 means the
+  rule loses money over time even when most slips win).
 
 ---
 

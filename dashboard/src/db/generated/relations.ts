@@ -47,7 +47,6 @@ export const matchesRelations = relations(matches, ({one, many}) => ({
 	historicalOdds: many(historicalOdds),
 	oddsSnapshots: many(oddsSnapshots),
 	predictions: many(predictions),
-	valueLegs: many(valueLegs),
 	league: one(leagues, {
 		fields: [matches.leagueId],
 		references: [leagues.id]
@@ -62,6 +61,7 @@ export const matchesRelations = relations(matches, ({one, many}) => ({
 		references: [teams.id],
 		relationName: "matches_homeTeamId_teams_id"
 	}),
+	valueLegs: many(valueLegs),
 }));
 
 export const oddsSnapshotsRelations = relations(oddsSnapshots, ({one, many}) => ({
@@ -84,7 +84,19 @@ export const predictionsRelations = relations(predictions, ({one, many}) => ({
 	valueLegs: many(valueLegs),
 }));
 
+export const slipLegsRelations = relations(slipLegs, ({one}) => ({
+	valueLeg: one(valueLegs, {
+		fields: [slipLegs.valueLegId],
+		references: [valueLegs.id]
+	}),
+	slip: one(slips, {
+		fields: [slipLegs.slipId],
+		references: [slips.id]
+	}),
+}));
+
 export const valueLegsRelations = relations(valueLegs, ({one, many}) => ({
+	slipLegs: many(slipLegs),
 	prediction: one(predictions, {
 		fields: [valueLegs.predictionId],
 		references: [predictions.id]
@@ -96,18 +108,6 @@ export const valueLegsRelations = relations(valueLegs, ({one, many}) => ({
 	match: one(matches, {
 		fields: [valueLegs.matchId],
 		references: [matches.id]
-	}),
-	slipLegs: many(slipLegs),
-}));
-
-export const slipLegsRelations = relations(slipLegs, ({one}) => ({
-	valueLeg: one(valueLegs, {
-		fields: [slipLegs.valueLegId],
-		references: [valueLegs.id]
-	}),
-	slip: one(slips, {
-		fields: [slipLegs.slipId],
-		references: [slips.id]
 	}),
 }));
 

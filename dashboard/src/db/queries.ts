@@ -136,12 +136,18 @@ function withLegs(db: Db, rows: SlipRow[]): SlipWithLegs[] {
  * Today's slips per type and pool: daily/mid slips dated today (Lagos); the mega acca
  * is one per weekend window, so show the latest mega whose window has not ended.
  */
-export function todaysSlips(db: Db, today: string, nowUtc: string): SlipWithLegs[] {
-  const dated = db.select().from(slips).where(eq(slips.slipDate, today)).all();
+export function todaysSlips(db: Db, today: string, nowUtc: string, strategy: string): SlipWithLegs[] {
+  const dated = db
+    .select()
+    .from(slips)
+    .where(and(eq(slips.slipDate, today), eq(slips.strategy, strategy)))
+    .all();
   const mega = db
     .select()
     .from(slips)
-    .where(and(eq(slips.slipType, "mega_acca"), gte(slips.windowEndUtc, nowUtc)))
+    .where(
+      and(eq(slips.slipType, "mega_acca"), gte(slips.windowEndUtc, nowUtc), eq(slips.strategy, strategy)),
+    )
     .orderBy(desc(slips.slipDate), desc(slips.id))
     .all();
   const byKey = new Map<string, SlipRow>();
@@ -421,11 +427,14 @@ export function unsettledPastSlips(db: Db, beforeUtc: string): number {
 // ---------------------------------------------------------------------------
 
 export type PerfMode = "all" | "paper" | "placed";
+/** docs/05 §8: stats of the two selection rules are kept apart ("all" mixes them). */
+export type PerfStrategy = "all" | "likeliest" | "value";
 
 export type LegPerf = {
   value_leg_id: number;
   slip_type: string;
   pool: string;
+  strategy: string;
   mode: string;
   league: string;
   market: string;
@@ -448,6 +457,7 @@ export type SlipPerf = {
   slip_id: number;
   slip_type: string;
   pool: string;
+  strategy: string;
   slip_date: string;
   legs: number;
   total_odds: number;
@@ -462,24 +472,25 @@ export type SlipPerf = {
   model_version: string;
 };
 
-function modeWhere(mode: PerfMode): SQL {
-  return mode === "all" ? sql`1 = 1` : sql`mode = ${mode}`;
+function modeWhere(mode: PerfMode, strategy: PerfStrategy): SQL {
+  const m = mode === "all" ? sql`1 = 1` : sql`mode = ${mode}`;
+  return strategy === "all" ? m : sql`${m} AND strategy = ${strategy}`;
 }
 
 /**
  * Settled legs, each value leg counted once (a leg can sit in several slips).
  * Pool/mode of the first slip it appeared in are kept for splits.
  */
-export function legPerformance(db: Db, mode: PerfMode): LegPerf[] {
+export function legPerformance(db: Db, mode: PerfMode, strategy: PerfStrategy): LegPerf[] {
   return db.all<LegPerf>(sql`
     SELECT * FROM v_leg_performance
     WHERE slip_leg_id IN (
-      SELECT min(slip_leg_id) FROM v_leg_performance WHERE ${modeWhere(mode)} GROUP BY value_leg_id
+      SELECT min(slip_leg_id) FROM v_leg_performance WHERE ${modeWhere(mode, strategy)} GROUP BY value_leg_id
     )
     ORDER BY kickoff_utc, value_leg_id`);
 }
 
-export function slipPerformance(db: Db, mode: PerfMode): SlipPerf[] {
+export function slipPerformance(db: Db, mode: PerfMode, strategy: PerfStrategy): SlipPerf[] {
   return db.all<SlipPerf>(sql`
-    SELECT * FROM v_slip_performance WHERE ${modeWhere(mode)} ORDER BY slip_date, slip_id`);
+    SELECT * FROM v_slip_performance WHERE ${modeWhere(mode, strategy)} ORDER BY slip_date, slip_id`);
 }

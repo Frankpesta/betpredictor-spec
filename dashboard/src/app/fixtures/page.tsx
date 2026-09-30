@@ -5,19 +5,22 @@ import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { getDb } from "@/db/client";
 import { legsForPredictions, leagueKeys, upcomingFixtures, type ValueLegRow } from "@/db/queries";
-import { formatKickoff, lagosToday, odds2, parseUtc, pctSigned, toDbUtc } from "@/lib/format";
+import { formatKickoff, lagosToday, odds2, parseUtc, pct1, pctSigned, toDbUtc } from "@/lib/format";
 import { selectionLabel } from "@/lib/labels";
-import { loadSettings, qualifies } from "@/lib/settings";
-
-const HORIZON_HOURS = 72; // docs/07 §2.2 and docs/05 §1.2
+import { loadSettings, qualifies, type Strategy } from "@/lib/settings";
 
 function one(v: string | string[] | undefined): string {
   return (Array.isArray(v) ? v[0] : v) ?? "";
 }
 
-/** Best qualifying leg: highest edge, ties by higher p_final (docs/05 §3 ordering). */
-function bestLeg(legs: ValueLegRow[]): ValueLegRow | undefined {
-  return [...legs].sort((a, b) => b.edge - a.edge || b.pFinal - a.pFinal || a.id - b.id)[0];
+/**
+ * Best qualifying leg. "likeliest" (docs/05 §8): highest p_final, then edge — the engine's
+ * tie-break order. "value": highest edge, then p_final.
+ */
+function bestLeg(legs: ValueLegRow[], strategy: Strategy): ValueLegRow | undefined {
+  const byP = (a: ValueLegRow, b: ValueLegRow) => b.pFinal - a.pFinal || b.edge - a.edge || a.id - b.id;
+  const byEdge = (a: ValueLegRow, b: ValueLegRow) => b.edge - a.edge || b.pFinal - a.pFinal || a.id - b.id;
+  return [...legs].sort(strategy === "likeliest" ? byP : byEdge)[0];
 }
 
 export default async function FixturesPage(props: PageProps<"/fixtures">) {
@@ -30,7 +33,8 @@ export default async function FixturesPage(props: PageProps<"/fixtures">) {
   if (!res.ok) return <DbMissing dbPath={res.dbPath} error={res.error} />;
   const settings = loadSettings();
   const now = new Date();
-  const until = new Date(now.getTime() + HORIZON_HOURS * 3_600_000);
+  const horizonHours = settings.horizonHours; // general.horizon_hours (docs/07 §2.2)
+  const until = new Date(now.getTime() + horizonHours * 3_600_000);
 
   const all = upcomingFixtures(res.db, toDbUtc(now), toDbUtc(until));
   const legs = legsForPredictions(
@@ -46,7 +50,7 @@ export default async function FixturesPage(props: PageProps<"/fixtures">) {
       const q = own.filter((l) => qualifies(l, settings));
       return {
         ...f,
-        best: bestLeg(q),
+        best: bestLeg(q, settings.selection),
         nQualifying: q.length,
         nFlagged: own.filter((l) => l.sanityStatus === "flagged").length,
       };
@@ -60,9 +64,19 @@ export default async function FixturesPage(props: PageProps<"/fixtures">) {
 
   return (
     <div className="space-y-6">
-      <PageHeader eyebrow={`Next ${HORIZON_HOURS} hours`} title="Fixtures">
-        Scheduled matches in the next {HORIZON_HOURS} hours. A leg qualifies with no sanity flag, edge ≥{" "}
-        {pctSigned(settings.minEdgeLeg)} and odds {odds2(settings.minOdds)}–{odds2(settings.maxOdds)}.
+      <PageHeader eyebrow={`Next ${horizonHours / 24} days`} title="Fixtures">
+        Scheduled matches in the next {horizonHours / 24} days.{" "}
+        {settings.selection === "likeliest" ? (
+          <>
+            Selection rule: <strong>likeliest</strong> — a leg qualifies with no sanity flag; handicaps only on the
+            favourite&apos;s side. The best leg is the most probable one, not the best value.
+          </>
+        ) : (
+          <>
+            A leg qualifies with no sanity flag, edge ≥ {pctSigned(settings.minEdgeLeg)} and odds{" "}
+            {odds2(settings.minOdds)}–{odds2(settings.maxOdds)}.
+          </>
+        )}
       </PageHeader>
 
       <form className="flex flex-wrap items-end gap-3 rounded-2xl bg-card p-4 text-sm ring-1 ring-border" method="get">
@@ -143,7 +157,8 @@ export default async function FixturesPage(props: PageProps<"/fixtures">) {
                     {f.best ? (
                       <M v={f.modelVersion}>
                         {f.best.market} {selectionLabel(f.best.market, f.best.selection, f.best.line)} @{" "}
-                        {odds2(f.best.odds)} ({pctSigned(f.best.edge)})
+                        {odds2(f.best.odds)} (
+                        {settings.selection === "likeliest" ? pct1(f.best.pFinal) : pctSigned(f.best.edge)})
                         {f.nQualifying > 1 && ` +${f.nQualifying - 1} more`}
                       </M>
                     ) : f.predictionId ? (

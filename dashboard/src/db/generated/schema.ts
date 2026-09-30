@@ -135,36 +135,6 @@ export const predictions = sqliteTable("predictions", {
 	index("ix_predictions_match_id").on(table.matchId),
 ]);
 
-export const valueLegs = sqliteTable("value_legs", {
-	matchId: integer("match_id").notNull().references(() => matches.id, { onDelete: "restrict" } ),
-	predictionId: integer("prediction_id").notNull().references(() => predictions.id, { onDelete: "restrict" } ),
-	oddsSnapshotId: integer("odds_snapshot_id").notNull().references(() => oddsSnapshots.id, { onDelete: "restrict" } ),
-	market: text().notNull(),
-	line: real().notNull(),
-	selection: text().notNull(),
-	odds: real().notNull(),
-	pModel: real("p_model").notNull(),
-	pFinal: real("p_final").notNull(),
-	pMarketDevig: real("p_market_devig").notNull(),
-	pWin: real("p_win").notNull(),
-	pHalfWin: real("p_half_win").notNull(),
-	pPush: real("p_push").notNull(),
-	pHalfLoss: real("p_half_loss").notNull(),
-	pLoss: real("p_loss").notNull(),
-	expectedMultiplier: real("expected_multiplier").notNull(),
-	edge: real().notNull(),
-	sanityStatus: text("sanity_status").notNull(),
-	sanityReason: text("sanity_reason"),
-	id: integer().primaryKey().notNull(),
-	createdAt: numeric("created_at").default(sql`(CURRENT_TIMESTAMP)`).notNull(),
-	updatedAt: numeric("updated_at").default(sql`(CURRENT_TIMESTAMP)`).notNull(),
-},
-(table) => [
-	index("ix_value_legs_prediction_id").on(table.predictionId),
-	index("ix_value_legs_odds_snapshot_id").on(table.oddsSnapshotId),
-	index("ix_value_legs_match_id").on(table.matchId),
-]);
-
 export const slipLegs = sqliteTable("slip_legs", {
 	slipId: integer("slip_id").notNull().references(() => slips.id, { onDelete: "cascade" } ),
 	valueLegId: integer("value_leg_id").notNull().references(() => valueLegs.id, { onDelete: "restrict" } ),
@@ -239,5 +209,37 @@ export const slips = sqliteTable("slips", {
 	createdAt: numeric("created_at").default(sql`(CURRENT_TIMESTAMP)`).notNull(),
 	updatedAt: numeric("updated_at").default(sql`(CURRENT_TIMESTAMP)`).notNull(),
 	pool: text().default("club").notNull(),
+	strategy: text().default("value").notNull(),
 });
+
+export const valueLegs = sqliteTable("value_legs", {
+	matchId: integer("match_id").notNull().references(() => matches.id, { onDelete: "restrict" } ),
+	predictionId: integer("prediction_id").notNull().references(() => predictions.id, { onDelete: "restrict" } ),
+	oddsSnapshotId: integer("odds_snapshot_id").notNull().references(() => oddsSnapshots.id, { onDelete: "restrict" } ),
+	market: text().notNull(),
+	line: real().notNull(),
+	selection: text().notNull(),
+	odds: real().notNull(),
+	pModel: real("p_model").notNull(),
+	pFinal: real("p_final").notNull(),
+	pMarketDevig: real("p_market_devig").notNull(),
+	pWin: real("p_win").notNull(),
+	pHalfWin: real("p_half_win").notNull(),
+	pPush: real("p_push").notNull(),
+	pHalfLoss: real("p_half_loss").notNull(),
+	pLoss: real("p_loss").notNull(),
+	expectedMultiplier: real("expected_multiplier").notNull(),
+	edge: real().notNull(),
+	sanityStatus: text("sanity_status").notNull(),
+	sanityReason: text("sanity_reason"),
+	id: integer().primaryKey().notNull(),
+	createdAt: numeric("created_at").default(sql`(CURRENT_TIMESTAMP)`).notNull(),
+	updatedAt: numeric("updated_at").default(sql`(CURRENT_TIMESTAMP)`).notNull(),
+	qualifies: integer(),
+},
+(table) => [
+	index("ix_value_legs_prediction_id").on(table.predictionId),
+	index("ix_value_legs_match_id").on(table.matchId),
+	index("ix_value_legs_odds_snapshot_id").on(table.oddsSnapshotId),
+]);
 

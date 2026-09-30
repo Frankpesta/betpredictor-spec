@@ -2,7 +2,7 @@
 
 Per enabled competition: make sure a fresh model run exists (refit if it is older than
 MAX_MODEL_AGE or older than the newest finished match), store predictions for every
-scheduled match in the next 72 h, price every (market, line) pair of the latest odds
+scheduled match within `general.horizon_hours`, price every (market, line) pair of the latest odds
 snapshot with the shared value pipeline, and write every selection to `value_legs`.
 Slips are then built per pool — club legs and INTL legs are never mixed.
 """
@@ -36,16 +36,23 @@ from engine.logging import get_logger
 from engine.model.league import StoredModel
 from engine.model.markets import Market, OutcomeProbs, Selection, price_selection
 from engine.model.score_matrix import AbsurdRatesError, to_json_list
-from engine.slips.builder import ChosenSlip, daily_2odds, mega_acca, mid_acca, weekend_window
+from engine.slips.builder import (
+    MID_WINDOW,
+    ChosenSlip,
+    daily_2odds,
+    mega_acca,
+    mid_acca,
+    weekend_window,
+)
 from engine.slips.constraints import SPORTYBET_MAX_SELECTIONS, Leg
-from engine.value.edge import evaluate_pair
+from engine.value.edge import LegValue, evaluate_pair
+from engine.value.selection import favourite_side, qualifies_likeliest
 
 if TYPE_CHECKING:
     from engine.jobs import JobContext
 
 log = get_logger(__name__)
 
-PICK_HORIZON = timedelta(hours=72)  # docs/05 §1.2
 MAX_MODEL_AGE = timedelta(days=7)  # docs/05 §1.1
 STALE_ODDS_AGE = timedelta(hours=3)  # docs/05 §1.3
 PAIRS = {"AH": ("home", "away"), "OU": ("over", "under")}
@@ -189,6 +196,7 @@ def price_match(
     stale_pred = pred.model_run_id != run.id
     v = settings.value
     pool = "intl" if lg.international else "club"
+    priced: list[tuple[str, float, OddsSnapshot, LegValue]] = []
     for (market, line), sides in sorted(by_key.items()):
         sels = PAIRS[market]
         if not all(s in sides for s in sels):
@@ -212,58 +220,74 @@ def price_match(
             max_odds=v.max_odds,
             max_model_market_gap=v.max_model_market_gap,
         )
-        for snap, lv in ((a, legs[0]), (b, legs[1])):
-            probs = _price(mat, market, lv.selection, line)
-            half = not lv.reasons or "non_half_line_v1" not in lv.reasons
-            row = ValueLeg(
-                match_id=match.id,
-                prediction_id=pred.id,
-                odds_snapshot_id=snap.id,
-                market=market,
-                line=line,
-                selection=lv.selection,
-                odds=lv.odds,
-                p_model=lv.p_model,
-                p_final=lv.p_final,
-                p_market_devig=lv.p_market_devig,
-                # half lines: outcome distribution is (p_final, 0, 0, 0, 1 - p_final)
-                p_win=lv.p_final if half else probs.p_win,
-                p_half_win=0.0 if half else probs.p_half_win,
-                p_push=0.0 if half else probs.p_push,
-                p_half_loss=0.0 if half else probs.p_half_loss,
-                p_loss=1.0 - lv.p_final if half else probs.p_loss,
-                expected_multiplier=lv.expected_multiplier,
-                edge=lv.edge,
-                sanity_status="flagged" if lv.reasons else "ok",
-                sanity_reason=",".join(lv.reasons) or None,
+        priced += [(market, line, a, legs[0]), (market, line, b, legs[1])]
+    # docs/05 §8: the favourite comes from the blended AH probabilities of this batch
+    favourite = favourite_side(
+        {
+            line: lv.p_final
+            for market, line, _, lv in priced
+            if market == "AH" and lv.selection == "home"
+        }
+    )
+    for market, line, snap, lv in priced:
+        if v.selection == "likeliest":
+            ok = qualifies_likeliest(lv.reasons, market, lv.selection, favourite)
+        else:
+            ok = lv.qualifies
+        probs = _price(mat, market, lv.selection, line)
+        half = not lv.reasons or "non_half_line_v1" not in lv.reasons
+        row = ValueLeg(
+            match_id=match.id,
+            prediction_id=pred.id,
+            odds_snapshot_id=snap.id,
+            market=market,
+            line=line,
+            selection=lv.selection,
+            odds=lv.odds,
+            p_model=lv.p_model,
+            p_final=lv.p_final,
+            p_market_devig=lv.p_market_devig,
+            # half lines: outcome distribution is (p_final, 0, 0, 0, 1 - p_final)
+            p_win=lv.p_final if half else probs.p_win,
+            p_half_win=0.0 if half else probs.p_half_win,
+            p_push=0.0 if half else probs.p_push,
+            p_half_loss=0.0 if half else probs.p_half_loss,
+            p_loss=1.0 - lv.p_final if half else probs.p_loss,
+            expected_multiplier=lv.expected_multiplier,
+            edge=lv.edge,
+            sanity_status="flagged" if lv.reasons else "ok",
+            sanity_reason=",".join(lv.reasons) or None,
+            qualifies=ok,
+        )
+        session.add(row)
+        session.flush()
+        report.legs_priced += 1
+        for r in lv.reasons:
+            report.flagged[r] += 1
+        report.qualifying += int(ok)
+        report.legs_by_pool[pool].append(
+            (
+                Leg(
+                    match_id=match.id,
+                    market=market,
+                    line=line,
+                    selection=lv.selection,
+                    odds=lv.odds,
+                    p_final=lv.p_final,
+                    expected_multiplier=lv.expected_multiplier,
+                    kickoff_utc=match.kickoff_utc,
+                    qualifies=ok,
+                    sanity_ok=not lv.reasons,
+                ),
+                row.id,
             )
-            session.add(row)
-            session.flush()
-            report.legs_priced += 1
-            for r in lv.reasons:
-                report.flagged[r] += 1
-            report.qualifying += int(lv.qualifies)
-            report.legs_by_pool[pool].append(
-                (
-                    Leg(
-                        match_id=match.id,
-                        market=market,
-                        line=line,
-                        selection=lv.selection,
-                        odds=lv.odds,
-                        p_final=lv.p_final,
-                        expected_multiplier=lv.expected_multiplier,
-                        kickoff_utc=match.kickoff_utc,
-                        qualifies=lv.qualifies,
-                        sanity_ok=not lv.reasons,
-                    ),
-                    row.id,
-                )
-            )
+        )
 
 
-def _replace_or_keep(session: Session, slip_type: str, pool: str, slip_date: Any) -> bool:
-    """Delete this type/pool/date's pending+open slips.
+def _replace_or_keep(
+    session: Session, slip_type: str, pool: str, slip_date: Any, strategy: str
+) -> bool:
+    """Delete this type/pool/date/strategy's pending+open slips.
 
     Returns True when a booked or settled slip remains (then no new slip is made).
     """
@@ -272,6 +296,7 @@ def _replace_or_keep(session: Session, slip_type: str, pool: str, slip_date: Any
             Slip.slip_type == slip_type,
             Slip.pool == pool,
             Slip.slip_date == slip_date,
+            Slip.strategy == strategy,
             Slip.booking_status == "pending",
             Slip.status == "open",
         )
@@ -281,7 +306,12 @@ def _replace_or_keep(session: Session, slip_type: str, pool: str, slip_date: Any
         session.scalar(
             select(func.count())
             .select_from(Slip)
-            .where(Slip.slip_type == slip_type, Slip.pool == pool, Slip.slip_date == slip_date)
+            .where(
+                Slip.slip_type == slip_type,
+                Slip.pool == pool,
+                Slip.slip_date == slip_date,
+                Slip.strategy == strategy,
+            )
         )
         or 0
     ) > 0
@@ -300,6 +330,7 @@ def store_slip(
     slip = Slip(
         slip_type=slip_type,
         pool=pool,
+        strategy=settings.value.selection,
         slip_date=slip_date,
         window_start_utc=window[0],
         window_end_utc=window[1],
@@ -319,6 +350,7 @@ def build_slips(session: Session, settings: Settings, now: datetime, report: Pic
     tz = settings.tz
     today = now.astimezone(tz).date()
     sc = settings.slips
+    strategy = settings.value.selection
     mega_window = weekend_window(now, sc.mega_acca.weekend_start, sc.mega_acca.weekend_end, tz)
     for pool in ("club", "intl"):
         entries = report.legs_by_pool.get(pool, [])
@@ -330,14 +362,14 @@ def build_slips(session: Session, settings: Settings, now: datetime, report: Pic
                 sc.daily_2odds.enabled,
                 today,
                 (now, now + timedelta(hours=sc.daily_2odds.window_hours)),
-                daily_2odds(legs, now, sc.daily_2odds, SPORTYBET_MAX_SELECTIONS),
+                daily_2odds(legs, now, sc.daily_2odds, SPORTYBET_MAX_SELECTIONS, strategy),
             ),
             (
                 "mid_acca",
                 sc.mid_acca.enabled,
                 today,
-                (now, now + PICK_HORIZON),
-                mid_acca(legs, now, sc.mid_acca),
+                (now, now + MID_WINDOW),
+                mid_acca(legs, now, sc.mid_acca, strategy=strategy),
             ),
             (
                 # one mega slip per weekend window: keyed on the window's end date (Monday)
@@ -351,6 +383,7 @@ def build_slips(session: Session, settings: Settings, now: datetime, report: Pic
                     sc.mega_acca,
                     settings.value.min_odds,
                     settings.value.max_odds,
+                    strategy=strategy,
                 ),
             ),
         ]
@@ -359,11 +392,13 @@ def build_slips(session: Session, settings: Settings, now: datetime, report: Pic
             if not enabled:
                 report.slips[key] = "disabled"
                 continue
-            if _replace_or_keep(session, slip_type, pool, slip_date):
+            if _replace_or_keep(session, slip_type, pool, slip_date, strategy):
                 report.slips[key] = "kept existing booked/settled slip"
                 continue
             if chosen is None:
-                report.slips[key] = "none — no value"
+                report.slips[key] = (
+                    "none — no value" if strategy == "value" else "none — no feasible combination"
+                )
                 continue
             slip = store_slip(session, slip_type, pool, slip_date, window, chosen, ids, settings)
             t = chosen.totals
@@ -386,7 +421,7 @@ def run_picks(ctx: JobContext) -> str:
                     Match.league_id == league.id,
                     Match.status == "scheduled",
                     Match.kickoff_utc > now,
-                    Match.kickoff_utc <= now + PICK_HORIZON,
+                    Match.kickoff_utc <= now + timedelta(hours=s.general.horizon_hours),
                 )
                 .order_by(Match.kickoff_utc, Match.id)
             ).all()
@@ -402,6 +437,7 @@ def run_picks(ctx: JobContext) -> str:
     ctx.note("predictions_created", report.predictions_created)
     ctx.note("legs_priced", report.legs_priced)
     ctx.note("flagged_by_reason", dict(report.flagged))
+    ctx.note("selection", s.value.selection)
     ctx.note("qualifying", report.qualifying)
     ctx.note("slips", report.slips)
     for reason, n in report.skipped.items():
@@ -411,6 +447,7 @@ def run_picks(ctx: JobContext) -> str:
             f"odds stale (> 3 h) for {len(report.stale_odds_matches)} matches — run `make odds`"
         )
     lines = [
+        f"selection: {s.value.selection}   "
         f"legs priced: {report.legs_priced}   qualifying: {report.qualifying}   "
         f"predictions created: {report.predictions_created}   refits: {report.refits or 'none'}",
         "flagged by reason: "

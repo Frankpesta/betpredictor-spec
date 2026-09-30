@@ -4,6 +4,7 @@ import { getDb } from "@/db/client";
 import { latestGate, todaysSlips } from "@/db/queries";
 import { lagosToday, toDbUtc } from "@/lib/format";
 import { POOL_LABEL, SLIP_TYPES } from "@/lib/labels";
+import { loadSettings } from "@/lib/settings";
 
 export default async function TodayPage() {
   const today = lagosToday();
@@ -18,7 +19,8 @@ export default async function TodayPage() {
     );
   }
 
-  const slips = todaysSlips(res.db, today, toDbUtc(new Date()));
+  const { selection } = loadSettings();
+  const slips = todaysSlips(res.db, today, toDbUtc(new Date()), selection);
   const edgeValidated = latestGate(res.db).gatePassed === 1;
   const hasIntl = slips.some((s) => s.pool === "intl");
 
@@ -30,8 +32,9 @@ export default async function TodayPage() {
           <>
             {" "}
             No slips today. If today&apos;s run has not happened yet, press <strong>Run daily</strong> (or{" "}
-            <code>make daily</code>); if it has, the model found no value — see Fixtures and Data health for
-            details.
+            <code>make daily</code>); if it has,{" "}
+            {selection === "value" ? "the model found no value" : "no combination met the slip rules"} — see
+            Fixtures and Data health for details.
           </>
         )}
       </PageHeader>
@@ -55,6 +58,7 @@ export default async function TodayPage() {
                 pool={pool}
                 slip={slips.find((s) => s.slipType === type && s.pool === pool)}
                 edgeValidated={edgeValidated}
+                strategy={selection}
               />
             ))}
           </div>

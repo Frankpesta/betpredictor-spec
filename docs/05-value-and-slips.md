@@ -142,3 +142,71 @@ feasible. B+C: odds 1.917, p 0.585, EM 1.1214 → feasible. A+B+C: odds
 - Mega respects `max_legs` and the SportyBet cap.
 - Re-running picks for the same date replaces only `pending` & `open` slips
   (integration test with a temp SQLite DB).
+
+---
+
+## 8. Selection strategy: "likeliest" (user decision 2026-09-30)
+
+`value.selection` in `config/settings.toml` picks the rule. The user switched from
+`"value"` (§2.2 above) to `"likeliest"`: *"The goal is to win."* They chose pure
+likeliest (no odds floor), the 30/70 blend, kept slip types without edge rules,
+backing the stronger team on handicaps, and restarting the paper clock.
+
+Honest framing (CLAUDE.md §6): the likeliest leg is usually a short price
+(1.02–1.30) that the market prices efficiently; its edge is typically negative
+(first run 2026-09-30: about −3% per leg; an 8-leg slip had expected multiplier 0.79). "Likeliest" raises the hit rate, not the expected return. The
+dashboard and reports keep showing edge and expected multiplier.
+
+### 8.1 Qualifying legs (`value_legs.qualifies`)
+A leg qualifies under "likeliest" when **all** hold:
+- `sanity_status = 'ok'` (§2.1 unchanged — half lines only, gap/low-confidence/
+  kickoff/stale/overround checks still exclude);
+- `market = 'OU'`, **or** `market = 'AH'` and the selection is the match
+  **favourite's** side (any line: favourite −1.5, −0.5 "to win", +0.5 "win or
+  draw", +1.5 …). A head start for the weaker team is never taken. If no
+  favourite can be determined, no AH leg of that match qualifies.
+
+No `min_edge_leg`, `min_odds` or `max_odds` rule. The engine stores the decision
+in `value_legs.qualifies` (migration 0006); the dashboard reads it.
+
+### 8.2 Favourite (`value/selection.py::favourite_side`)
+From the blended `p_final` of the *home* selection on AH half lines of the same
+snapshot batch:
+- both −0.5 and +0.5 present: P(home win) = p(−0.5), P(away win) = 1 − p(+0.5);
+  the larger is the favourite; an exact tie (±1e-9) → none;
+- otherwise the fair line is the half line whose home probability is closest to
+  0.5 (ties → the lower line): negative → home favourite, positive → away.
+
+### 8.3 Slips under "likeliest"
+Tie-break order (§3) already ranks by `p_final` first; unchanged. Differences:
+- **daily_2odds:** no `min_slip_edge`. Before the 60-leg cap, the pool keeps legs
+  priced in `[target_odds_min^(1/max_legs), target_odds_max]` (≈ 1.23–2.30),
+  otherwise the cap fills with ~1.05 legs that can never reach 1.85.
+- **mid_acca:** greedy by tie-break order, no slip-edge floor.
+- **mega_acca:** pool = qualifying legs with `p_final ≥ min_leg_probability`; no
+  `min_leg_edge`, no odds bounds.
+- `slips.strategy` records the rule (`value` | `likeliest`); re-running picks only
+  replaces pending/open slips of the same strategy. Performance views expose
+  `strategy`; the dashboard's Performance page defaults to the active rule.
+
+### 8.4 Tests (`tests/test_selection.py`, `tests/test_picks.py`)
+- `favourite_side` table: ±0.5 home/away/tie, fair-line home/away, whole lines
+  ignored, empty.
+- `qualifies_likeliest` table: OU always, AH favourite yes / underdog no /
+  unknown favourite no, any sanity reason no.
+- Builders: daily ignores slip edge and the unreachable short prices; mid takes
+  the likeliest legs with EM < 1; mega ignores odds bounds.
+- Picks end-to-end: AH away (underdog) never qualifies, OU ok legs qualify,
+  slips tagged `likeliest`; under `"value"` slips are tagged `value` and
+  `qualifies` equals the §2.2 rule.
+
+### 8.5 Not in scope yet
+First/second-half handicaps and totals (user request 2026-09-30, planned next):
+need SportyBet market discovery (docs/04 — never guess ids), a half-time
+goals model (football-data HTHG/HTAG), and a backtest before entering slips.
+
+### 8.6 Look-ahead horizon (user decision 2026-09-30)
+`general.horizon_hours` (default 168 = 7 days) replaces the fixed 72 h of §1.2 and
+docs/04 §2.2 for `make odds`, `make picks` and the dashboard fixtures page. Slip
+windows are unchanged (daily 24 h, mid 72 h, mega = weekend window). Early odds move
+more; re-run `make odds` before booking (booking refuses > 3% drift anyway).

@@ -25,6 +25,7 @@ SELECTIONS = ("over", "under", "home", "away")
 SANITY_STATUSES = ("ok", "flagged")
 SLIP_TYPES = ("daily_2odds", "mid_acca", "mega_acca")
 SLIP_POOLS = ("club", "intl")  # docs/09 §5: INTL legs only in INTL-only slips
+SLIP_STRATEGIES = ("value", "likeliest")  # docs/05 §8: which selection rule built the slip
 BOOKING_STATUSES = ("pending", "booked", "failed", "manual")
 SLIP_MODES = ("paper", "placed")
 SLIP_STATUSES = ("open", "won", "lost", "void", "partial")
@@ -185,6 +186,7 @@ class ValueLeg(IdTimestampMixin, Base):
         enum_check("market", MARKETS),
         enum_check("selection", SELECTIONS),
         enum_check("sanity_status", SANITY_STATUSES),
+        bool_check("qualifies"),
     )
 
     match_id: Mapped[int] = mapped_column(_fk("matches.id"), index=True)
@@ -206,6 +208,8 @@ class ValueLeg(IdTimestampMixin, Base):
     edge: Mapped[float] = mapped_column(REAL)
     sanity_status: Mapped[str] = mapped_column(Text)
     sanity_reason: Mapped[str | None] = mapped_column(Text)
+    # docs/05 §8: slip eligibility under the strategy active at pick time (NULL before 0006)
+    qualifies: Mapped[bool | None] = mapped_column(IntBool)
 
 
 class Slip(IdTimestampMixin, Base):
@@ -213,6 +217,7 @@ class Slip(IdTimestampMixin, Base):
     __table_args__ = (
         enum_check("slip_type", SLIP_TYPES),
         enum_check("pool", SLIP_POOLS),
+        enum_check("strategy", SLIP_STRATEGIES),
         enum_check("booking_status", BOOKING_STATUSES),
         enum_check("mode", SLIP_MODES),
         enum_check("status", SLIP_STATUSES),
@@ -220,6 +225,7 @@ class Slip(IdTimestampMixin, Base):
 
     slip_type: Mapped[str] = mapped_column(Text)
     pool: Mapped[str] = mapped_column(Text, default="club", server_default="club")
+    strategy: Mapped[str] = mapped_column(Text, default="value", server_default="value")
     slip_date: Mapped[date] = mapped_column(Date)
     window_start_utc: Mapped[datetime]
     window_end_utc: Mapped[datetime]

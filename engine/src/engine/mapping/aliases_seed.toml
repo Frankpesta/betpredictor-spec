@@ -175,7 +175,8 @@
 # Fuzzy proposals that were WRONG and corrected here: Ireland (proposed Northern Ireland),
 #   Congo DR (proposed Congo), Czechia (proposed China), Korea Republic (proposed Czech
 #   Republic), USA (proposed Russia).
-# Deliberately NOT mapped (non-FIFA sides, no INTL model team): Bonaire, Guadeloupe, Martinique.
+# Deliberately NOT mapped (non-FIFA sides, no INTL model team): Bonaire, Guadeloupe, Martinique,
+#   Saint-Martin (2026-09-30).
 
 [sportybet.BUNDES]
 "Augsburg" = "Augsburg"
@@ -242,10 +243,12 @@
 "Burkina Faso" = "Burkina Faso"
 "Burundi" = "Burundi"
 "Cameroon" = "Cameroon"
+"Canada" = "Canada"
 "Cape Verde" = "Cape Verde"
 "Cayman Islands" = "Cayman Islands"
 "Central African Republic" = "Central African Republic"
 "Chile" = "Chile"
+"Colombia" = "Colombia"
 "Congo" = "Congo"
 "Congo DR" = "DR Congo"
 "Costa Rica" = "Costa Rica"
@@ -276,12 +279,14 @@
 "Greece" = "Greece"
 "Grenada" = "Grenada"
 "Guatemala" = "Guatemala"
+"Guinea" = "Guinea"
 "Guinea-Bissau" = "Guinea-Bissau"
 "Guyana" = "Guyana"
 "Haiti" = "Haiti"
 "Honduras" = "Honduras"
 "Hungary" = "Hungary"
 "Iceland" = "Iceland"
+"India" = "India"
 "Indonesia" = "Indonesia"
 "IR Iran" = "Iran"
 "Ireland" = "Republic of Ireland"
@@ -292,6 +297,7 @@
 "Japan" = "Japan"
 "Jordan" = "Jordan"
 "Kazakhstan" = "Kazakhstan"
+"Kenya" = "Kenya"
 "Korea Republic" = "South Korea"
 "Kosovo" = "Kosovo"
 "Latvia" = "Latvia"
@@ -309,6 +315,7 @@
 "Morocco" = "Morocco"
 "Mozambique" = "Mozambique"
 "Netherlands" = "Netherlands"
+"New Zealand" = "New Zealand"
 "Nicaragua" = "Nicaragua"
 "Niger" = "Niger"
 "Nigeria" = "Nigeria"
@@ -317,6 +324,7 @@
 "Norway" = "Norway"
 "Pakistan" = "Pakistan"
 "Palestine" = "Palestine"
+"Panama" = "Panama"
 "Paraguay" = "Paraguay"
 "Peru" = "Peru"
 "Philippines" = "Philippines"
@@ -355,9 +363,11 @@
 "United Arab Emirates" = "United Arab Emirates"
 "Uruguay" = "Uruguay"
 "USA" = "United States"
+"Uzbekistan" = "Uzbekistan"
 "Venezuela" = "Venezuela"
 "Vietnam" = "Vietnam"
 "Virgin Islands, British" = "British Virgin Islands"
+"Virgin Islands, U.S." = "United States Virgin Islands"
 "Wales" = "Wales"
 "Yemen" = "Yemen"
 "Zambia" = "Zambia"

@@ -179,3 +179,86 @@ def test_picks_end_to_end_rerun_identical_and_booked_slip_kept(migrated_db: Path
         assert s.get(Slip, booked_id) is not None
         assert s.scalar(select(func.count()).select_from(Slip)) == len(first)
         assert s.scalar(select(func.count()).select_from(SlipLeg)) > 0
+
+
+def _add_ah(s: Session) -> None:
+    """Every upcoming match gets AH ±0.5 and +1.5: the home side is the market favourite."""
+    now = utcnow()
+    for m in s.scalars(select(Match).where(Match.status == "scheduled")):
+        for line, home_odds, away_odds in ((-0.5, 1.55, 2.45), (0.5, 1.12, 6.00), (1.5, 1.04, 9.0)):
+            for sel, odds in (("home", home_odds), ("away", away_odds)):
+                s.add(
+                    OddsSnapshot(
+                        match_id=m.id,
+                        captured_at=now,
+                        snapshot_kind="pick",
+                        market="AH",
+                        line=line,
+                        selection=sel,
+                        odds=odds,
+                        sb_market_id="16",
+                        sb_specifier=f"hcp={line}",
+                        sb_outcome_id="1714" if sel == "home" else "1715",
+                        is_active=True,
+                    )
+                )
+    s.flush()
+
+
+def test_picks_likeliest_backs_the_favourite_and_tags_slips(migrated_db: Path) -> None:
+    """docs/05 §8: AH legs qualify only on the favourite's side; slips carry the strategy."""
+    base = _settings()
+    settings = base.model_copy(
+        update={
+            "value": base.value.model_copy(
+                update={"selection": "likeliest", "market_shrink_weight": 0.3}
+            )
+        }
+    )
+    with session_scope(migrated_db) as s:
+        sync_leagues(s, settings)
+        s.flush()
+        _league(s, "INTL", "Nation", 6)
+        _add_ah(s)
+    with job_run("picks", settings, migrated_db) as ctx:
+        run_picks(ctx)
+    assert ctx.summary["selection"] == "likeliest"
+    with session_scope(migrated_db) as s:
+        legs = s.scalars(select(ValueLeg)).all()
+        assert legs and all(vl.qualifies is not None for vl in legs)
+        for vl in legs:
+            if vl.market == "AH" and vl.selection == "away":
+                assert vl.qualifies is False  # the weaker side's head start is never taken
+            if vl.sanity_status == "ok" and vl.market == "OU":
+                assert vl.qualifies is True  # no edge / odds floor under "likeliest"
+        assert any(vl.qualifies for vl in legs if vl.market == "AH" and vl.selection == "home")
+        slips = s.scalars(select(Slip)).all()
+        assert slips and {sl.strategy for sl in slips} == {"likeliest"}
+        for slip in slips:
+            for sl in slip.legs:
+                assert s.get_one(ValueLeg, sl.value_leg_id).qualifies is True
+
+
+def test_picks_value_strategy_tags_slips_value(migrated_db: Path) -> None:
+    base = _settings()
+    settings = base.model_copy(
+        update={"value": base.value.model_copy(update={"selection": "value"})}
+    )
+    with session_scope(migrated_db) as s:
+        sync_leagues(s, settings)
+        s.flush()
+        _league(s, "EPL", "Club", 6)
+    with job_run("picks", settings, migrated_db) as ctx:
+        run_picks(ctx)
+    with session_scope(migrated_db) as s:
+        slips = s.scalars(select(Slip)).all()
+        assert slips and {sl.strategy for sl in slips} == {"value"}
+        for vl in s.scalars(select(ValueLeg)):
+            # value rule: qualifies == sanity ok + edge + odds bounds (docs/05 §2.2)
+            v = settings.value
+            expected = (
+                vl.sanity_status == "ok"
+                and vl.edge >= v.min_edge_leg
+                and v.min_odds <= vl.odds <= v.max_odds
+            )
+            assert vl.qualifies is expected

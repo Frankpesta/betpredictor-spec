@@ -5,14 +5,48 @@ import { DbMissing, Empty, PageHeader, Stat } from "@/components/status-bits";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { getDb } from "@/db/client";
-import { legPerformance, slipPerformance, type PerfMode } from "@/db/queries";
+import { legPerformance, slipPerformance, type PerfMode, type PerfStrategy } from "@/db/queries";
 import { ENGINE_URL } from "@/lib/engine";
 import { orDash, pct1, pctSigned } from "@/lib/format";
 import { SLIP_TYPE_LABEL, SLIP_TYPES } from "@/lib/labels";
 import { equityCurve, groupLegs, legStats, oddsBand, slipStats } from "@/lib/perf";
+import { loadSettings } from "@/lib/settings";
 import { cn } from "@/lib/utils";
 
 const MODES: PerfMode[] = ["all", "paper", "placed"];
+const STRATEGIES: PerfStrategy[] = ["likeliest", "value", "all"];
+const STRATEGY_LABEL: Record<PerfStrategy, string> = { likeliest: "Likeliest", value: "Value", all: "Both" };
+
+function one(v: string | string[] | undefined): string | undefined {
+  return Array.isArray(v) ? v[0] : v;
+}
+
+function perfHref(mode: PerfMode, strategy: PerfStrategy, current: PerfStrategy): string {
+  const q = new URLSearchParams();
+  if (mode !== "all") q.set("mode", mode);
+  if (strategy !== current) q.set("strategy", strategy);
+  const qs = q.toString();
+  return qs ? `/performance?${qs}` : "/performance";
+}
+
+function Tabs<T extends string>(props: { items: T[]; active: T; label: (t: T) => string; href: (t: T) => string }) {
+  return (
+    <div className="flex gap-0.5 rounded-xl bg-muted/70 p-1 text-sm ring-1 ring-border/60" role="tablist">
+      {props.items.map((t) => (
+        <Link
+          key={t}
+          href={props.href(t)}
+          className={cn(
+            "rounded-lg px-3 py-1.5 font-medium capitalize transition-colors",
+            t === props.active ? "bg-card shadow-sm ring-1 ring-border/70" : "text-muted-foreground hover:text-foreground",
+          )}
+        >
+          {props.label(t)}
+        </Link>
+      ))}
+    </div>
+  );
+}
 
 type Calibration = {
   n: number;
@@ -38,13 +72,17 @@ function Kpi({ label, value, sub }: { label: string; value: string; sub?: string
 
 export default async function PerformancePage(props: PageProps<"/performance">) {
   const sp = await props.searchParams;
-  const raw = Array.isArray(sp.mode) ? sp.mode[0] : sp.mode;
+  const raw = one(sp.mode);
   const mode: PerfMode = MODES.includes(raw as PerfMode) ? (raw as PerfMode) : "all";
+  // docs/05 §8: default to the selection rule in settings, so the two rules' stats never mix
+  const current: PerfStrategy = loadSettings().selection;
+  const rawS = one(sp.strategy);
+  const strategy: PerfStrategy = STRATEGIES.includes(rawS as PerfStrategy) ? (rawS as PerfStrategy) : current;
 
   const res = await getDb();
   if (!res.ok) return <DbMissing dbPath={res.dbPath} error={res.error} />;
-  const legs = legPerformance(res.db, mode);
-  const slips = slipPerformance(res.db, mode);
+  const legs = legPerformance(res.db, mode, strategy);
+  const slips = slipPerformance(res.db, mode, strategy);
   const calibration = await fetchCalibration(mode);
 
   const all = legStats(legs);
@@ -73,24 +111,20 @@ export default async function PerformancePage(props: PageProps<"/performance">) 
         eyebrow="Settled results"
         title="Performance"
         actions={
-          <div className="flex gap-0.5 rounded-xl bg-muted/70 p-1 text-sm ring-1 ring-border/60" role="tablist">
-          {MODES.map((m) => (
-            <Link
-              key={m}
-              href={m === "all" ? "/performance" : `/performance?mode=${m}`}
-              className={cn(
-                "rounded-lg px-3 py-1.5 font-medium capitalize transition-colors",
-                m === mode ? "bg-card shadow-sm ring-1 ring-border/70" : "text-muted-foreground hover:text-foreground",
-              )}
-            >
-              {m}
-            </Link>
-          ))}
+          <div className="flex flex-wrap gap-2">
+            <Tabs
+              items={STRATEGIES}
+              active={strategy}
+              label={(t) => STRATEGY_LABEL[t]}
+              href={(t) => perfHref(mode, t, current)}
+            />
+            <Tabs items={MODES} active={mode} label={(m) => m} href={(m) => perfHref(m, strategy, current)} />
           </div>
         }
       >
         Settled legs and slips, 1-unit flat stakes. Each value leg is counted once even when it sits in several
-        slips. Small samples are mostly noise.
+        slips. Small samples are mostly noise. Likeliest and value slips are different selection rules; compare
+        them separately (the calibration chart covers all settled legs).
       </PageHeader>
 
       {legs.length === 0 && slips.length === 0 ? (

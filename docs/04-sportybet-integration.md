@@ -82,7 +82,8 @@ convention.
 
 ### 2.2 Fetch scope
 - `make odds` fetches events with kickoff in the next 72 hours (covers the
-  weekend when run on Friday) for enabled leagues only.
+  weekend when run on Friday) for enabled leagues only. **Changed 2026-09-30:**
+  the window is `general.horizon_hours` (7 days) — see docs/05 §8.6.
 - For each event: all full-time two-way AH lines and all full-time O/U lines
   available, both outcomes, with active status.
 

@@ -1,7 +1,7 @@
 """`make odds`: upcoming fixtures + AH/OU odds from SportyBet (docs/04 §2.2-2.3).
 
 One `pcEvents` request per competition (all its tournaments, markets 16 + 18).
-Events kicking off within `ODDS_HORIZON` are resolved to canonical teams (exact
+Events kicking off within `general.horizon_hours` are resolved to canonical teams (exact
 aliases, source `sportybet`), upserted into `matches` with `sportybet_event_id`, and
 every normalised line is stored in `odds_snapshots` (snapshot_kind 'pick').
 """
@@ -32,7 +32,6 @@ if TYPE_CHECKING:
 
 log = get_logger(__name__)
 
-ODDS_HORIZON = timedelta(hours=72)  # docs/04 §2.2
 SNAPSHOT_KIND = "pick"
 
 
@@ -148,7 +147,7 @@ def store_event(
 
 def run_odds(ctx: JobContext, transport_kind: str = "httpx") -> str:
     now = utcnow()
-    horizon = now + ODDS_HORIZON
+    horizon = now + timedelta(hours=ctx.settings.general.horizon_hours)  # docs/04 §2.2
     transport = make_transport(ctx.settings, transport_kind)
     client = SportyBetClient(transport)
     report: dict[str, dict[str, object]] = {}
@@ -179,7 +178,7 @@ def run_odds(ctx: JobContext, transport_kind: str = "httpx") -> str:
                         for name in (ev.home, ev.away):
                             if resolver.resolve(name, lg.key) is None:
                                 counts.unresolved.add(name)
-                        counts.skipped["outside_72h"] += 1
+                        counts.skipped["outside_horizon"] += 1
                         continue
                     store_event(s, league, lg, ev, resolver, now, counts)
                 resolver.flush_misses(now)
