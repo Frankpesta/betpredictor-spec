@@ -9,7 +9,11 @@ All functions pure; DB reads/writes happen in the `picks` job only.
 
 1. Latest successful `model_runs` per enabled league (fit if older than
    7 days or older than the newest finished match in `matches`; `make picks`
-   refits automatically in that case and logs it).
+   refits automatically in that case and logs it). Since 2026-10-02 (user
+   decision) `make daily` runs `ingest` before `odds -> picks -> book`, so new
+   results reach `matches` and trigger this refit every day. A failed ingest
+   is a warning on the daily run (its own `job_runs` row stays `failed`); the
+   day continues on the stored data.
 2. `predictions` for every scheduled match with kickoff in the next 72 hours
    (create if missing for the current model run).
 3. The **latest** `odds_snapshots` with `snapshot_kind='pick'` per

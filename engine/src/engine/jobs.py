@@ -290,8 +290,12 @@ JOBS: dict[str, JobFn] = {
     "close": _close,
     "settle": _settle,
 }
-# `daily` is a composite: odds -> picks -> book, each recorded as its own job run.
-DAILY_SEQUENCE = ("odds", "picks", "book")
+# `daily` is a composite: ingest -> odds -> picks -> book, each recorded as its own job run.
+# ingest first so `picks` refits on the latest results (ensure_fresh_run, docs/05 §1.1).
+DAILY_SEQUENCE = ("ingest", "odds", "picks", "book")
+# A failed soft step (source down, 403/429) does not stop the day: picks run on the data
+# already stored, and the failure stays visible in its own job run + the daily warnings.
+DAILY_SOFT_STEPS = frozenset({"ingest"})
 JOB_NAMES = (*JOBS, "daily")
 
 
@@ -316,8 +320,14 @@ def run_job(
     if name == "daily":
         with job_run("daily", settings, db_path, run_id) as ctx:
             for step in DAILY_SEQUENCE:
-                child = run_job(step, settings, db_path)
+                child = create_job_run(step, db_path)
                 ctx.summary.setdefault("steps", {})[step] = child
+                try:
+                    run_job(step, settings, db_path, child)
+                except Exception as exc:
+                    if step not in DAILY_SOFT_STEPS:
+                        raise
+                    ctx.warn(f"{step} failed (job run {child}): {exc!r}; continuing on stored data")
         return ctx.job_run_id
 
     with job_run(name, settings, db_path, run_id, params) as ctx:

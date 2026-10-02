@@ -1,0 +1,46 @@
+{
+ "eventId": "sr:match:74764066",
+ "gameId": "46430",
+ "estimateStartTime": 1790849400000,
+ "status": 4,
+ "setScore": "5:4",
+ "gameScore": [
+  "0:0",
+  "0:0",
+  "5:4"
+ ],
+ "matchStatus": "AP",
+ "homeTeamName": "Japan",
+ "awayTeamName": "Ecuador",
+ "sport": {
+  "id": "sr:sport:1",
+  "name": "Football",
+  "category": {
+   "id": "sr:category:4",
+   "name": "International",
+   "tournament": {
+    "id": "sr:tournament:851",
+    "name": "Int. Friendly Games"
+   }
+  }
+ },
+ "regularTimeScore": [
+  "0:0",
+  "0:0"
+ ],
+ "ai": false,
+ "bgEvent": false,
+ "matchTrackerNotAllowed": false,
+ "eventSource": {
+  "preMatchSource": {
+   "sourceType": "BET_RADAR",
+   "sourceId": "74764066"
+  },
+  "liveSource": {
+   "sourceType": "BET_RADAR",
+   "sourceId": "74764066"
+  }
+ },
+ "containsPcbb": false,
+ "banned": false
+}

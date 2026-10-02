@@ -42,7 +42,7 @@ close:
 settle:
 	$(ENGINE) engine settle
 
-# odds -> picks -> book (the normal daily command)
+# ingest -> odds -> picks -> book (the normal daily command; a failed ingest is warned, not fatal)
 daily:
 	$(ENGINE) engine daily
 

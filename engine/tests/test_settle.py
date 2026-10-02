@@ -98,6 +98,22 @@ def test_ninety_minute_score_on_real_results() -> None:
     assert all(r.ended for r in res.values())
 
 
+def test_after_penalties_is_ended_on_the_90_minute_score() -> None:
+    # Japan v Ecuador friendly 2026-09-30: 0:0, shoot-out 5:4 (matchStatus "AP")
+    event = json.loads((FIX / "eventResult_AP.json").read_text(encoding="utf-8"))
+    res, _ = parse_results(
+        {"bizCode": 10000, "data": {"totalNum": 1, "tournaments": [{"events": [event]}]}}
+    )
+    r = res["sr:match:74764066"]
+    assert r.ended and r.match_status == "AP" and r.score_90 == (0, 0)
+
+
+def test_unknown_match_status_is_not_ended() -> None:
+    event = {"eventId": "x", "status": 4, "matchStatus": "Postponed", "gameScore": ["0:0", "0:0"]}
+    res, _ = parse_results({"bizCode": 10000, "data": {"tournaments": [{"events": [event]}]}})
+    assert not res["x"].ended
+
+
 def test_halves_that_do_not_add_up_are_refused() -> None:
     assert ninety_minute_score({"gameScore": ["1:0", "1:0"], "setScore": "3:0"}) is None
 

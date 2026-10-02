@@ -141,6 +141,46 @@ def test_daily_runs_steps_under_one_parent(
         assert s.scalars(select(JobRun).where(JobRun.status == "running")).first() is None
 
 
+def test_daily_continues_after_failed_ingest(
+    client: TestClient, migrated_db: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    ran: list[str] = []
+
+    def blocked(ctx: JobContext) -> None:
+        raise RuntimeError("source returned 429")
+
+    for step in jobs.DAILY_SEQUENCE:
+        monkeypatch.setitem(jobs.JOBS, step, lambda ctx: ran.append(ctx.name))
+    monkeypatch.setitem(jobs.JOBS, "ingest", blocked)
+    run_id = client.post("/jobs/daily").json()["job_run_id"]
+    client.app.state.runner.join(5)  # type: ignore[attr-defined]
+    body = client.get(f"/jobs/{run_id}").json()
+    assert body["status"] == "success"
+    assert ran == ["odds", "picks", "book"]
+    ingest_id = body["summary"]["steps"]["ingest"]
+    assert any(f"job run {ingest_id}" in w for w in body["summary"]["warnings"])
+    ingest = client.get(f"/jobs/{ingest_id}").json()
+    assert ingest["status"] == "failed" and "429" in ingest["error"]
+
+
+def test_daily_stops_when_a_hard_step_fails(
+    client: TestClient, migrated_db: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    ran: list[str] = []
+
+    def broken(ctx: JobContext) -> None:
+        raise RuntimeError("odds exploded")
+
+    for step in jobs.DAILY_SEQUENCE:
+        monkeypatch.setitem(jobs.JOBS, step, lambda ctx: ran.append(ctx.name))
+    monkeypatch.setitem(jobs.JOBS, "odds", broken)
+    run_id = client.post("/jobs/daily").json()["job_run_id"]
+    client.app.state.runner.join(5)  # type: ignore[attr-defined]
+    body = client.get(f"/jobs/{run_id}").json()
+    assert body["status"] == "failed" and "odds exploded" in body["error"]
+    assert ran == ["ingest"]
+
+
 @pytest.mark.parametrize("name", ["discover", "book-test", "nope"])
 def test_cli_only_or_unknown_jobs_404(client: TestClient, name: str) -> None:
     assert client.post(f"/jobs/{name}").status_code == 404

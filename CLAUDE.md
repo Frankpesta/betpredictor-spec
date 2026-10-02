@@ -121,7 +121,7 @@ make picks        # predictions -> value legs -> slips
 make book         # generate booking codes for today's unbooked slips
 make close        # snapshot near-kickoff odds for CLV (run ~30-60 min before kickoffs)
 make settle       # fetch results, settle legs and slips
-make daily        # odds -> picks -> book  (the normal daily command)
+make daily        # ingest -> odds -> picks -> book  (the normal daily command)
 make api          # FastAPI on 127.0.0.1:8765
 make dashboard    # Next.js dev server on localhost:3000
 make dev          # api + dashboard together

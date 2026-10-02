@@ -4,7 +4,8 @@
 The **90-minute score is gameScore[0] + gameScore[1]** (first + second half):
 `regularTimeScore` turned out to be the first-half score and `setScore` includes extra
 time and penalties (discovered 2026-09-27). Results without per-half scores cannot be
-used. Statuses other than the observed "Ended" (3 / 4) are reported, never guessed.
+used. Statuses other than the observed "Ended" (3 / 4) and "AP" (after penalties, 4;
+accepted by the user 2026-10-02) are reported, never guessed.
 """
 
 from __future__ import annotations
@@ -19,7 +20,8 @@ from engine.sportybet.markets import check_envelope
 RESULTS_PATH = "/factsCenter/eventResultList"
 PAGE_SIZE = 100
 ENDED_STATUSES = frozenset({3, 4})  # both observed with matchStatus "Ended"
-ENDED_MATCH_STATUS = "Ended"
+# "AP" = after penalties (docs/discovered/sportybet/2026-10-02/results-status-AP.md)
+ENDED_MATCH_STATUSES = frozenset({"Ended", "AP"})
 
 
 @dataclass(frozen=True)
@@ -31,7 +33,7 @@ class SbResult:
 
     @property
     def ended(self) -> bool:
-        return self.status in ENDED_STATUSES and self.match_status == ENDED_MATCH_STATUS
+        return self.status in ENDED_STATUSES and self.match_status in ENDED_MATCH_STATUSES
 
 
 def _pair(s: str) -> tuple[int, int]:

@@ -32,7 +32,7 @@ All tunables live in `config/settings.toml`. Data, logs and reports go under `da
 ## Daily routine
 
 ```sh
-make daily        # morning (Friday for the weekend): odds -> picks -> book
+make daily        # morning (Friday for the weekend): ingest -> odds -> picks -> book
 make dev          # API on 127.0.0.1:8765 + dashboard on http://localhost:3000
 make close        # ~30-60 min before the main kickoffs (closing odds for CLV)
 make settle       # next day: fetch results, settle legs and slips
