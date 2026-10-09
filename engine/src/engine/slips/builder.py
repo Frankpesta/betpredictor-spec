@@ -35,6 +35,12 @@ class ChosenSlip:
     totals: SlipTotals
 
 
+def _by_rule(strategy: Strategy) -> bool:
+    """docs/05 §8-9: "likeliest" and "data_rule" store eligibility in `Leg.qualifies` and
+    have no edge floors; only "value" applies the edge/odds rules here."""
+    return strategy != "value"
+
+
 def _useful_for_daily(leg: Leg, cfg: Daily2OddsCfg) -> bool:
     """docs/05 §8: under "likeliest" the top legs by p_final are ~1.05 shots that can never
     reach the odds target, so the pool keeps legs priced in [target_min^(1/max_legs),
@@ -53,9 +59,9 @@ def best_daily_2odds(
 
     Window filtering is the caller's job (`daily_2odds` for live, per-day groups
     in the backtest). Returns None when nothing is feasible — never relaxes.
-    Under "likeliest" (docs/05 §8) the slip-edge floor does not apply.
+    Under "likeliest"/"data_rule" (docs/05 §8-9) the slip-edge floor does not apply.
     """
-    likeliest = strategy == "likeliest"
+    likeliest = _by_rule(strategy)
     pool = sort_legs(
         [
             leg
@@ -118,7 +124,7 @@ def mid_acca(
 ) -> ChosenSlip | None:
     """docs/05 §5, greedy in tie-break order. A leg that would take the running slip edge
     below min_slip_edge is skipped and the next one tried (user decision 2026-09-27).
-    Under "likeliest" (docs/05 §8) there is no slip-edge floor."""
+    Under "likeliest"/"data_rule" (docs/05 §8-9) there is no slip-edge floor."""
     start, end = now + MIN_LEAD, now + MID_WINDOW
     pool = best_leg_per_match(
         [
@@ -134,7 +140,7 @@ def mid_acca(
     for leg in pool:
         if len(chosen) >= cap:
             break
-        if strategy == "likeliest" or slip_totals([*chosen, leg]).edge >= cfg.min_slip_edge:
+        if _by_rule(strategy) or slip_totals([*chosen, leg]).edge >= cfg.min_slip_edge:
             chosen.append(leg)
     if len(chosen) < cfg.min_legs:
         return None
@@ -186,11 +192,12 @@ def mega_acca(
     strategy: Strategy = "value",
 ) -> ChosenSlip | None:
     """docs/05 §6: top legs by tie-break order in the weekend window, ≥ 2 legs.
-    Under "likeliest" (docs/05 §8) the pool is the qualifying legs (no edge/odds floors)."""
+    Under "likeliest"/"data_rule" (docs/05 §8-9) the pool is the qualifying legs (no edge
+    floor; "data_rule" has its own odds floor in `qualifies`)."""
     start, end = window
 
     def eligible(leg: Leg) -> bool:
-        if strategy == "likeliest":
+        if _by_rule(strategy):
             return leg.qualifies
         return leg.sanity_ok and leg.edge >= cfg.min_leg_edge and min_odds <= leg.odds <= max_odds
 

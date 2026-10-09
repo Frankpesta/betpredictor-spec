@@ -1,7 +1,7 @@
 # BetPredictor task runner. Recipes are written to work under both sh and cmd.exe.
 ENGINE = cd engine && uv run
 
-.PHONY: setup migrate ingest map-teams fit backtest discover odds picks book close settle daily api dashboard dev test seed-demo dashboard-check
+.PHONY: setup migrate ingest map-teams fit backtest backtest-ht discover odds picks book close settle daily api dashboard dev test seed-demo dashboard-check
 
 setup:
 	cd engine && uv sync
@@ -23,6 +23,9 @@ fit:
 
 backtest:
 	$(ENGINE) engine backtest
+
+backtest-ht:
+	$(ENGINE) engine backtest-ht
 
 discover:
 	$(ENGINE) engine discover

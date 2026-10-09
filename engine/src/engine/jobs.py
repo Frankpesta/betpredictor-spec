@@ -231,6 +231,12 @@ def _backtest(ctx: JobContext) -> None:
     print(run_backtest(ctx))
 
 
+def _backtest_ht(ctx: JobContext) -> None:
+    from engine.backtest.half_time import run_backtest_ht
+
+    print(run_backtest_ht(ctx))
+
+
 def _discover(ctx: JobContext) -> None:
     from engine.sportybet.discovery import run_discovery
 
@@ -281,6 +287,7 @@ JOBS: dict[str, JobFn] = {
     "map-teams": _map_teams,
     "fit": _fit,
     "backtest": _backtest,
+    "backtest-ht": _backtest_ht,  # docs/10 §4: half-time calibration backtest
     "discover": _discover,
     "odds": _odds,
     "picks": _picks,

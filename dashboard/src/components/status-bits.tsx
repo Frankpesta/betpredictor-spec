@@ -43,12 +43,14 @@ export function NoEdgeBanner() {
   );
 }
 
-export function UnvalidatedBadge() {
+export function UnvalidatedBadge({
+  title = "Internationals have no historical odds: ROI/CLV were never backtested (docs/09 §4)",
+}: { title?: string } = {}) {
   return (
     <Badge
       variant="outline"
       className="border-amber-500/50 bg-amber-400/10 text-amber-700 dark:text-amber-300"
-      title="Internationals have no historical odds: ROI/CLV were never backtested (docs/09 §4)"
+      title={title}
     >
       Unvalidated
     </Badge>

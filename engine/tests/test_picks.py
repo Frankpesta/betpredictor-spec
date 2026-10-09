@@ -11,7 +11,17 @@ from sqlalchemy.orm import Session
 
 from engine.config import Settings, get_settings
 from engine.db.base import utcnow
-from engine.db.models import League, Match, OddsSnapshot, Prediction, Slip, SlipLeg, Team, ValueLeg
+from engine.db.models import (
+    League,
+    Match,
+    ModelRun,
+    OddsSnapshot,
+    Prediction,
+    Slip,
+    SlipLeg,
+    Team,
+    ValueLeg,
+)
 from engine.db.picks import run_picks
 from engine.db.session import session_scope
 from engine.jobs import job_run, sync_leagues
@@ -22,9 +32,14 @@ def _settings() -> Settings:
     return base.model_copy(
         update={
             "leagues": base.leagues.model_copy(update={"enabled": ["EPL", "INTL"]}),
-            # make the synthetic value visible: no shrink, generous gap
+            # make the synthetic value visible: no shrink, generous gap; the slip-flow
+            # tests below use "likeliest" (data_rule has its own test)
             "value": base.value.model_copy(
-                update={"market_shrink_weight": 1.0, "max_model_market_gap": 0.3}
+                update={
+                    "selection": "likeliest",
+                    "market_shrink_weight": 1.0,
+                    "max_model_market_gap": 0.3,
+                }
             ),
         }
     )
@@ -262,3 +277,90 @@ def test_picks_value_strategy_tags_slips_value(migrated_db: Path) -> None:
                 and v.min_odds <= vl.odds <= v.max_odds
             )
             assert vl.qualifies is expected
+
+
+def test_picks_data_rule_stores_reasons_and_tags_slips(migrated_db: Path) -> None:
+    """docs/05 §9: qualifying legs carry their team-data reason; slips tagged data_rule."""
+    base = _settings()
+    rule = base.value.data_rule.model_copy(update={"over_score_p": 0.5, "over_max_blanks": 10})
+    settings = base.model_copy(
+        update={
+            "value": base.value.model_copy(update={"selection": "data_rule", "data_rule": rule})
+        }
+    )
+    with session_scope(migrated_db) as s:
+        sync_leagues(s, settings)
+        s.flush()
+        _league(s, "EPL", "Club", 6)
+    with job_run("picks", settings, migrated_db) as ctx:
+        run_picks(ctx)
+    assert ctx.summary["selection"] == "data_rule"
+    with session_scope(migrated_db) as s:
+        legs = s.scalars(select(ValueLeg)).all()
+        assert any(vl.qualifies for vl in legs)
+        for vl in legs:
+            assert (vl.qualify_reason is not None) is bool(vl.qualifies)
+            if vl.qualifies:
+                assert vl.sanity_status == "ok"
+                assert vl.odds >= rule.min_odds and vl.p_final >= rule.min_leg_probability
+                assert vl.qualify_reason.startswith("both score: home scores ")
+            if vl.market == "OU" and vl.selection == "under":
+                assert not vl.qualifies  # synthetic attacks are not weak
+        slips = s.scalars(select(Slip)).all()
+        assert {sl.strategy for sl in slips} <= {"data_rule"}
+        for slip in slips:
+            for sl in slip.legs:
+                assert s.get_one(ValueLeg, sl.value_leg_id).qualifies is True
+
+
+def test_picks_half_time_markets_priced_from_half_matrices(migrated_db: Path) -> None:
+    """docs/10: club half-time legs use the stored half-time model; reasons name the half."""
+    base = _settings()
+    loose = base.value.data_rule_half.model_copy(
+        update={"over_score_p": 0.3, "over_max_blanks": 10, "min_odds": 1.01}
+    )
+    settings = base.model_copy(
+        update={
+            "half_time": base.half_time.model_copy(update={"min_matches": 20}),
+            "value": base.value.model_copy(
+                update={"selection": "data_rule", "data_rule_half": loose}
+            ),
+        }
+    )
+    with session_scope(migrated_db) as s:
+        sync_leagues(s, settings)
+        s.flush()
+        _league(s, "EPL", "Club", 3)
+        for m in s.scalars(select(Match).where(Match.status == "finished")):
+            m.ht_home_goals, m.ht_away_goals = (m.home_goals or 0) // 2, (m.away_goals or 0) // 2
+        now = utcnow()
+        for m in s.scalars(select(Match).where(Match.status == "scheduled")):
+            for sel, odds in (("over", 1.45), ("under", 2.70)):
+                s.add(
+                    OddsSnapshot(
+                        match_id=m.id,
+                        captured_at=now,
+                        snapshot_kind="pick",
+                        market="OU_1H",
+                        line=0.5,
+                        selection=sel,
+                        odds=odds,
+                        sb_market_id="68",
+                        sb_specifier="total=0.5",
+                        sb_outcome_id="12" if sel == "over" else "13",
+                        is_active=True,
+                    )
+                )
+    with job_run("picks", settings, migrated_db) as ctx:
+        run_picks(ctx)
+    with session_scope(migrated_db) as s:
+        run = s.scalars(select(ModelRun)).one()
+        assert '"half_time": {' in run.params_json
+        ht_legs = s.scalars(select(ValueLeg).where(ValueLeg.market == "OU_1H")).all()
+        assert len(ht_legs) == 6
+        assert all(0 < vl.p_model < 1 for vl in ht_legs)
+        assert any(vl.qualifies for vl in ht_legs)
+        for vl in ht_legs:
+            if vl.qualifies:
+                assert vl.qualify_reason is not None
+                assert vl.qualify_reason.startswith("1st half: both score")

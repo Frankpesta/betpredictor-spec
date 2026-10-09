@@ -26,6 +26,7 @@ class Leg:
     kickoff_utc: datetime
     # docs/05 §2.2 under "value" (sanity ok + edge >= min_edge_leg + odds bounds);
     # docs/05 §8 under "likeliest" (sanity ok + AH only on the favourite's side)
+    # docs/05 §9 under "data_rule" (sanity ok + odds floor + a team-data reason)
     qualifies: bool
     sanity_ok: bool = True  # docs/05 §2.1 only (the mega acca uses its own edge floor)
 

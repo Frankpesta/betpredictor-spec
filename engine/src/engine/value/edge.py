@@ -7,7 +7,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from engine.model.markets import OutcomeProbs, classify_line
+from engine.model.markets import LINELESS_MARKETS, OutcomeProbs, base_market, is_binary
 from engine.value.sanity import SanityInput, qualifies, sanity_reasons
 
 
@@ -21,6 +21,26 @@ def devig_pair(odds_a: float, odds_b: float) -> tuple[float, float]:
 
 def overround(odds_a: float, odds_b: float) -> float:
     return 1.0 / odds_a + 1.0 / odds_b
+
+
+def devig_group(odds: tuple[float, ...], total: float = 1.0) -> tuple[float, ...]:
+    """Multiplicative devig over a market's outcomes: p_i = total·q_i / Σq.
+
+    `total` is what the true probabilities sum to: 1 for 2-/3-way markets, 2 for double
+    chance (each scoreline wins two of its three selections)."""
+    if any(o <= 1.0 for o in odds):
+        raise ValueError(f"decimal odds must be > 1, got {odds}")
+    q = [1.0 / o for o in odds]
+    return tuple(total * x / sum(q) for x in q)
+
+
+def group_overround(odds: tuple[float, ...], total: float = 1.0) -> float:
+    """Σ(1/o) scaled to a 2-way-comparable figure (double chance: divided by 2)."""
+    return sum(1.0 / o for o in odds) / total
+
+
+# docs/05 §10: double chance outcomes overlap — their probabilities sum to 2.
+GROUP_TOTAL = {"DC": 2.0}
 
 
 def shrink(p_model: float, p_market_devig: float, weight: float) -> float:
@@ -52,11 +72,12 @@ class LegValue:
     qualifies: bool
 
 
-def evaluate_pair(
+def evaluate_group(
+    market: str,
     line: float,
-    selections: tuple[str, str],
-    model: tuple[OutcomeProbs, OutcomeProbs],
-    odds: tuple[float, float],
+    selections: tuple[str, ...],
+    model: tuple[OutcomeProbs, ...],
+    odds: tuple[float, ...],
     *,
     low_confidence: bool,
     minutes_to_kickoff: float | None,
@@ -66,22 +87,24 @@ def evaluate_pair(
     min_odds: float,
     max_odds: float,
     max_model_market_gap: float,
-) -> tuple[LegValue, LegValue]:
-    """docs/05 §2 for both selections of one (match, market, line). Used live and in backtests.
+) -> tuple[LegValue, ...]:
+    """docs/05 §2 for every selection of one (match, market, line); docs/05 §10 markets.
 
-    Half lines: p_win = p_final, EM = p_final·o. Other lines are priced from the model's
-    full outcome distribution for information only; the sanity step flags them.
+    Win-or-lose selections (half lines, 1X2/DC/BTTS): p_win = p_final, EM = p_final·o.
+    Other lines are priced from the model's full outcome distribution for information only;
+    the sanity step flags them.
     """
-    devig = devig_pair(*odds)
-    ovr = overround(*odds)
-    half = classify_line(line) == "half"
+    total = GROUP_TOTAL.get(base_market(market), 1.0)
+    devig = devig_group(odds, total)
+    ovr = group_overround(odds, total)
+    binary = is_binary(market, line)
     out: list[LegValue] = []
-    for k in (0, 1):
+    for k in range(len(selections)):
         p_model = model[k].p_win
         p_final = shrink(p_model, devig[k], shrink_weight)
         em = (
             half_line_expected_multiplier(p_final, odds[k])
-            if half
+            if binary
             else model[k].expected_multiplier(odds[k])
         )
         reasons = sanity_reasons(
@@ -93,6 +116,7 @@ def evaluate_pair(
                 low_confidence=low_confidence,
                 minutes_to_kickoff=minutes_to_kickoff,
                 stale_prediction=stale_prediction,
+                lineless=base_market(market) in LINELESS_MARKETS,
             ),
             max_model_market_gap,
         )
@@ -110,4 +134,42 @@ def evaluate_pair(
                 qualifies=qualifies(reasons, e, odds[k], min_edge, min_odds, max_odds),
             )
         )
-    return out[0], out[1]
+    return tuple(out)
+
+
+def evaluate_pair(
+    line: float,
+    selections: tuple[str, str],
+    model: tuple[OutcomeProbs, OutcomeProbs],
+    odds: tuple[float, float],
+    *,
+    low_confidence: bool,
+    minutes_to_kickoff: float | None,
+    stale_prediction: bool,
+    shrink_weight: float,
+    min_edge: float,
+    min_odds: float,
+    max_odds: float,
+    max_model_market_gap: float,
+) -> tuple[LegValue, LegValue]:
+    """docs/05 §2 for both selections of one AH/OU (match, line). Used live and in backtests.
+
+    Half lines: p_win = p_final, EM = p_final·o. Other lines are priced from the model's
+    full outcome distribution for information only; the sanity step flags them.
+    """
+    a, b = evaluate_group(
+        "OU",  # AH and OU share the line rules; only lineless markets differ
+        line,
+        selections,
+        model,
+        odds,
+        low_confidence=low_confidence,
+        minutes_to_kickoff=minutes_to_kickoff,
+        stale_prediction=stale_prediction,
+        shrink_weight=shrink_weight,
+        min_edge=min_edge,
+        min_odds=min_odds,
+        max_odds=max_odds,
+        max_model_market_gap=max_model_market_gap,
+    )
+    return a, b

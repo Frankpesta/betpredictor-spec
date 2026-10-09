@@ -62,6 +62,9 @@ FD_COLUMN_MAP: dict[str, Any] = {
         "away": "AwayTeam",
         "home_goals": "FTHG",
         "away_goals": "FTAG",
+        # docs/10 §1: first-half goals (optional columns)
+        "ht_home_goals": "HTHG",
+        "ht_away_goals": "HTAG",
     },
     # Home-team handicap per timing; AH odds rows take their line from here.
     "ah_line": {"open": "AHh", "close": "AHCh"},
@@ -145,6 +148,8 @@ class FdRow:
     home_goals: int | None
     away_goals: int | None
     status: str
+    ht_home_goals: int | None
+    ht_away_goals: int | None
     fd_row_hash: str
     odds: tuple[OddsRow, ...]
 
@@ -157,6 +162,7 @@ class FdParsed:
     time_missing: int = 0
     odds_missing: int = 0  # odds cells that were blank / non-numeric / <= 1.0
     ah_line_missing: int = 0  # AH odds present but no line -> not stored
+    bad_ht_goals: int = 0  # docs/10 §1: half-time goals stored as NULL
     missing_columns: list[str] = field(default_factory=list)
 
 
@@ -218,6 +224,24 @@ def parse_kickoff(date_str: str, time_str: str | None) -> tuple[datetime, bool]:
     return local.astimezone(UTC), missing
 
 
+def _half_time(
+    values: dict[str, str], hg: int | None, ag: int | None, out: FdParsed
+) -> tuple[int | None, int | None]:
+    """docs/10 §1: (HTHG, HTAG), or (None, None) — counted — when one is missing,
+    non-numeric or above the full-time goals. Rows without full-time goals carry none."""
+    raw = (values.get(_ID["ht_home_goals"], ""), values.get(_ID["ht_away_goals"], ""))
+    if hg is None or ag is None or (not raw[0] and not raw[1]):
+        return None, None
+    try:
+        hh, ha = parse_goals(raw[0]), parse_goals(raw[1])
+    except ValueError:
+        hh = ha = None
+    if hh is None or ha is None or hh > hg or ha > ag:
+        out.bad_ht_goals += 1
+        return None, None
+    return hh, ha
+
+
 def parse_csv(content: bytes, expected_div: str) -> FdParsed:
     out = FdParsed()
     reader = csv.DictReader(io.StringIO(decode(content)))
@@ -258,6 +282,7 @@ def parse_csv(content: bytes, expected_div: str) -> FdParsed:
         except ValueError:
             out.skipped["bad_goals"] += 1
             continue
+        ht = _half_time(values, hg, ag, out)
         h = row_hash(div, date_str, home, away)
         if h in seen:
             out.skipped["duplicate_in_file"] += 1
@@ -291,6 +316,8 @@ def parse_csv(content: bytes, expected_div: str) -> FdParsed:
                 home_goals=hg if finished else None,
                 away_goals=ag if finished else None,
                 status="finished" if finished else "scheduled",
+                ht_home_goals=ht[0] if finished else None,
+                ht_away_goals=ht[1] if finished else None,
                 fd_row_hash=h,
                 odds=tuple(odds),
             )
@@ -370,6 +397,8 @@ def upsert_file(session: Session, league: League, season: str, parsed: FdParsed)
             "home_goals": r.home_goals,
             "away_goals": r.away_goals,
             "status": r.status,
+            "ht_home_goals": r.ht_home_goals,
+            "ht_away_goals": r.ht_away_goals,
             "fd_row_hash": r.fd_row_hash,
         }
         if m is None:
@@ -502,6 +531,7 @@ def ingest_all(ctx: JobContext, client: PoliteClient, leagues: list[LeagueDef]) 
                 "odds_unchanged": counts.odds_unchanged,
                 "odds_cells_missing": parsed.odds_missing,
                 "ah_line_missing": parsed.ah_line_missing,
+                "bad_ht_goals": parsed.bad_ht_goals,
                 "time_missing": parsed.time_missing,
                 "teams_created": counts.teams_created,
                 "missing_columns": parsed.missing_columns,
@@ -512,6 +542,8 @@ def ingest_all(ctx: JobContext, client: PoliteClient, leagues: list[LeagueDef]) 
                 ctx.count(f"fd_{k}", entry[k])
             for reason, n in parsed.skipped.items():
                 ctx.skip(f"fd_{reason}", n)
+            if parsed.bad_ht_goals:
+                ctx.skip("fd_bad_ht_goals", parsed.bad_ht_goals)  # stored as NULL, row kept
             if parsed.time_missing:
                 ctx.warn(f"{label}: {parsed.time_missing} rows had no Time; assumed 15:00 UK")
             log.info(

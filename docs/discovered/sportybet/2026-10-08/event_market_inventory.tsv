@@ -1,0 +1,240 @@
+id	desc	group	(factsCenter/event sr:match:72221296 Chelsea v Bournemouth, 2026-10-08)
+1	1X2	Main
+8	1st Goal	Main
+9	Last Goal	Main
+10	Double Chance	Main
+11	Draw No Bet	Main
+12	Home No Bet	Main
+13	Away No Bet	Main
+14	Handicap 0:1	Main
+15	Winning Margin	Main
+16	Asian Handicap -2.5	Main
+18	Over/Under	Main
+19	Chelsea Over/Under	Goals
+20	Bournemouth Over/Under	Goals
+21	Exact Goals	Main
+23	Home Team Goals	Goals
+24	Away Team Goals	Goals
+25	Goal Range	Main
+26	Odd/Even	Main
+27	Home Team Odd/Even	Goals
+28	Away Team Odd/Even	Goals
+29	GG/NG	Main
+30	Teams to Score	Main
+31	Home Team Clean Sheet	Goals
+32	Away Team Clean Sheet	Goals
+33	Home Team to Win to Nil	Combo
+34	Away Team to Win to Nil	Combo
+35	1X2 & GG/NG	Combo
+36	Over/Under & GG/NG	Combo
+37	1X2 & Over/Under 1.5	Combo
+38	1st Goalscorer	Players
+39	Last Goalscorer	Players
+40	Anytime Goalscorer	Players
+41	Correct Score [0:0]	Main
+45	Correct Score	Main
+46	Half Time/Full Time Correct Score	Half
+47	Half Time/Full Time	Main
+48	Home Team to Win Both Halves	Half
+49	Away Team to Win Both Halves	Half
+50	Home Team to Win Either Half	Half
+51	Away Team to Win Either Half	Half
+52	Highest Scoring Half	Half
+53	Home Team Highest Scoring Half	Half
+54	Away Team Highest Scoring Half	Half
+55	1st/2nd Half GG/NG	Goals
+56	Home Team to Score In Both Halves	Goals
+57	Away Team to Score In Both Halves	Goals
+58	Both Halves Over 1.5	Goals
+59	Both Halves Under 1.5	Goals
+60	1st Half - 1X2	Half
+62	1st Half - 1st Goal	Half
+63	1st Half - Double Chance	Half
+64	1st Half - Draw No Bet	Half
+65	1st Half - Handicap	Half
+66	1st Half - Asian Handicap	Half
+68	1st Half - Over/Under	Half
+69	1st half - Chelsea Over/Under	Goals
+70	1st half - Bournemouth Over/Under	Goals
+71	1st Half - Exact Goals	Goals
+74	1st Half - Odd/Even	Goals
+75	1st Half - GG/NG	Goals
+76	1st Half - Home Team Clean Sheet	Goals
+77	1st Half - Away Team Clean Sheet	Goals
+78	1st Half - 1X2 & GG/NG	Half
+79	1st Half - 1X2 & Over/Under 1.5	Half
+81	1st Half - Correct Score	Half
+83	2nd Half - 1X2	Half
+84	2nd Half - 1st Goal	Goals
+85	2nd Half - Double Chance	Half
+86	2nd Half - Draw No Bet	Half
+87	2nd Half - Handicap 0:1	Half
+88	2nd Half - Asian Handicap	Half
+90	2nd Half - Over/Under	Half
+91	2nd Half - Chelsea Over/Under	Goals
+92	2nd Half - Bournemouth Over/Under	Goals
+93	2nd Half - Exact Goals	Goals
+94	2nd Half - Odd/Even	Goals
+95	2nd Half - GG/NG	Goals
+96	2nd Half - Home Team Clean Sheet	Goals
+97	2nd Half - Away Team Clean Sheet	Goals
+98	2nd Half - Correct Score	Half
+100	When will the 1st goal be scored (15 min interval)	Minutes
+101	When will the 1st goal be scored (10 min interval)	Minutes
+105	10 minutes - 1X2 from 1 to 10	Minutes
+136	Bookings 1X2	Bookings
+137	1st Booking	Bookings
+138	Booking Points-Over/Under	Bookings
+139	Bookings - Over/Under	Bookings
+142	Exact Bookings	Bookings
+143	Home Exact Bookings	Bookings
+144	Away Exact Bookings	Bookings
+146	Sending Off	Bookings
+147	Home Sending Off	Bookings
+148	Away Sending Off	Bookings
+149	1st Half - Bookings 1X2	Bookings
+150	1st Half - 1st Booking	Bookings
+151	1st Half - Total Booking Points	Bookings
+152	1st Half Bookings - Over/Under	Bookings
+155	1st Half - Exact Bookings	Bookings
+156	1st Half - Home Exact Bookings	Bookings
+157	1st Half - Away Exact Bookings	Bookings
+159	1st Half - Sending Off	Bookings
+160	1st Half - Home Sending Off	Bookings
+161	1st Half - Away Sending Off	Bookings
+162	Corners - 1X2	Corners
+163	1st Corner	Corners
+164	Last Corner	Corners
+165	Corner Handicap	Corners
+166	Corners - Over/Under	Corners
+169	Corner Range	Corners
+170	Home Corner Range	Corners
+171	Away Corner Range	Corners
+172	Odd/Even Corners	Corners
+173	1st Half - Corner 1X2	Corners
+174	1st Half - 1st Corner	Corners
+175	1st Half - Last Corner	Corners
+176	1st Half - Corner Handicap	Corners
+177	1st Half Corners - Over/Under	Corners
+180	1st Half -Home Exact Corners	Corners
+181	1st Half -Away Exact Corners	Corners
+182	1st Half - Corner Range	Corners
+183	1st Half - Odd/Even Corners	Corners
+184	1st Goal & 1X2	Combo
+540	Double Chance & 1st Half GG/NG	Half
+541	Double Chance & 2nd Half GG/NG	Half
+542	1st Half - Double Chance & GG/NG	Half
+543	2nd Half - 1X2 & GG/NG	Half
+544	2nd Half - 1X2 & Over/Under 1.5	Half
+545	2nd Half -  Double Chance & GG/NG	Half
+546	Double Chance & GG/NG	Combo
+547	Double Chance & Over/Under 1.5	Combo
+548	Multigoals	Goals
+549	Home Multigoals	Goals
+550	Away Multigoals	Goals
+551	Multiscores	Goals
+552	1st Half - Multigoals	Goals
+553	2nd Half - Multigoals	Goals
+770	Player assists (incl. overtime)	Players
+775	Player goals (incl. overtime)	Players
+776	Player shots (incl. overtime)	Players
+777	Player shots on goal (incl. overtime)	Players
+780	Player tackles (incl. overtime)	Players
+818	Halftime/Fulltime & Over/Under 1.5	Combo
+819	Halftime/Fulltime & 1st Half Over/Under 0.5	Combo
+820	Halftime/Fulltime & Exact Goals	Combo
+854	Home Team or Over 2.5	Combo
+855	Home Team or Under 2.5	Combo
+856	Draw or Over 2.5	Combo
+857	Draw or Under 2.5	Combo
+858	Away or Over 2.5	Combo
+859	Away or Under 2.5	Combo
+860	Home Team or GG	Combo
+861	Draw or GG	Combo
+862	Away Team or GG	Combo
+863	Home Team or Any Clean Sheet	Combo
+864	Draw or Any Clean Sheet	Combo
+865	Away Team or Any Clean Sheet	Combo
+1179	1st Half Result or Match Result	Combo
+1191	Player to be carded (incl. overtime)	Bookings
+60000	GG/NG 2+	Main
+60010	Any Team To Score 2 or More Goals in a Row	Main
+60011	Home Team To Score 2 or More Goals in a Row	Main
+60012	Away Team To Score 2 or More Goals in a Row	Main
+60020	Any Team To Score 3 or More Goals in a Row	Main
+60021	Home Team To Score 3 or More Goals in a Row	Main
+60022	Away Team To Score 3 or More Goals in a Row	Main
+60100	1X2 - 2UP	Main
+60110	Double Chance - 1UP	Main
+60180	Over/Under - Early Goals	Main
+60200	1X2 - 1UP	Main
+60210	1X2 - Never Down	Main
+60300	Any Team to lead by 1 Goal at any time	Main
+60301	Any Team to lead by 2 Goals at any time	Main
+60302	Any Team to lead by 3 Goals at any time	Main
+60303	Home Team to lead by 1 Goal at any time	Main
+60304	Home Team to lead by 2 Goals at any time	Main
+60305	Home Team to lead by 3 Goals at any time	Main
+60306	Away Team to lead by 1 Goal at any time	Main
+60307	Away Team to lead by 2 Goals at any time	Main
+60308	Away Team to lead by 3 Goals at any time	Main
+450001	Goal Bounds	Main
+450002	Goal Bounds - Home	Goals
+450003	Goal Bounds - Away	Goals
+450004	Excluded Number of Goals	Main
+450005	Excluded Number of Goals - Home	Goals
+450006	Excluded Number of Goals - Away	Goals
+800054	Match Shots Outside Box	Match
+800063	Match Cards	Match
+800064	Match Cards 1st Half	Match
+800065	Match Cards 2nd Half	Match
+800097	Player Fouls Won	Players
+800109	Player Not to Score	Players
+800118	First Player Carded	Players
+800119	Player To Be Sent Off	Players
+800201	First to Score for their Team	Players
+800238	Player to score in 1st half	Players
+800239	Player to score in 2nd half	Players
+800249	To score in first 10 mins	Players
+800251	Player to score in both halves	Players
+800262	Team Assists	Teams
+800287	Team 2nd half shots on target	None
+800292	Player Total Accurate Passes	Players
+800296	Player To Be Carded	Players
+810001	Goal Bounds - 1st Half	Half
+810002	Excluded Number of Goals - First Half	Half
+900027	Both Teams to Score in Both Halves Yes/No	Half
+900029	2nd Half Home Team Total Goals Odd or Even	Half
+900030	2nd Half Away Team Total Goals Odd or Even	Half
+900031	Half-time Away Team Total Goals Odd or Even	Half
+900032	Half-time Home Team Total Goals Odd or Even	Half
+900036	1st Half Home Team to Win to Nil	Combo
+900037	1st Half Away Team to Win to Nil	Combo
+900038	2nd Half Home Team to Win to Nil	Combo
+900041	No Draw Both Teams To Score Yes/No	Goals
+900042	Half-time Double Chance & Total Goals	Combo
+900043	2nd Half Double Chance & Total Goals	Combo
+900052	2nd Half Away Team to Win to Nil	Combo
+900069	1X2 from 1 to 5 minute	Minutes
+900300	Home Team Total Corners	Corners
+900301	Away Team Total Corners	Corners
+900302	1st Half Home Team Corners	Corners
+900303	1st Half Away Team Corners	Corners
+900304	Home Team Total Bookings	Bookings
+900305	Away Team Total Bookings	Bookings
+900306	1st Half Home Team Total Bookings	Bookings
+900307	1st Half Away Team Total Bookings	Bookings
+900312	Bookings Handicap	Bookings
+900313	Total Goals Over/Under from 1 to 5 minute	Minutes
+900318	Shots on Target 1X2	Match
+900320	Shots 1X2	Match
+900383	Home Team To Win From Behind	Combo
+900384	Away Team To Win From Behind	Combo
+900393	Shots on Target Over/Under	Match
+900394	Shots Over/Under	Match
+900538	 1st Half Substitutions Over/Under	Match
+900546	Home Team Shots on Target Over/Under	Teams
+900547	Away Team Shots on Target Over/Under	Teams
+900552	Home Team Shots Over/Under	Teams
+900553	Away Team Shots Over/Under	Teams
+900617	Posts and Crossbars Over/Under	Match

@@ -6,7 +6,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { getDb } from "@/db/client";
 import { legsForPredictions, leagueKeys, upcomingFixtures, type ValueLegRow } from "@/db/queries";
 import { formatKickoff, lagosToday, odds2, parseUtc, pct1, pctSigned, toDbUtc } from "@/lib/format";
-import { selectionLabel } from "@/lib/labels";
+import { marketLabel, selectionLabel } from "@/lib/labels";
 import { loadSettings, qualifies, type Strategy } from "@/lib/settings";
 
 function one(v: string | string[] | undefined): string {
@@ -14,13 +14,13 @@ function one(v: string | string[] | undefined): string {
 }
 
 /**
- * Best qualifying leg. "likeliest" (docs/05 §8): highest p_final, then edge — the engine's
+ * Best qualifying leg. "likeliest"/"data_rule" (docs/05 §8-9): highest p_final, then edge — the engine's
  * tie-break order. "value": highest edge, then p_final.
  */
 function bestLeg(legs: ValueLegRow[], strategy: Strategy): ValueLegRow | undefined {
   const byP = (a: ValueLegRow, b: ValueLegRow) => b.pFinal - a.pFinal || b.edge - a.edge || a.id - b.id;
   const byEdge = (a: ValueLegRow, b: ValueLegRow) => b.edge - a.edge || b.pFinal - a.pFinal || a.id - b.id;
-  return [...legs].sort(strategy === "likeliest" ? byP : byEdge)[0];
+  return [...legs].sort(strategy === "value" ? byEdge : byP)[0];
 }
 
 export default async function FixturesPage(props: PageProps<"/fixtures">) {
@@ -66,7 +66,12 @@ export default async function FixturesPage(props: PageProps<"/fixtures">) {
     <div className="space-y-6">
       <PageHeader eyebrow={`Next ${horizonHours / 24} days`} title="Fixtures">
         Scheduled matches in the next {horizonHours / 24} days.{" "}
-        {settings.selection === "likeliest" ? (
+        {settings.selection === "data_rule" ? (
+          <>
+            Selection rule: <strong>data rule</strong> — every leg needs a team-data reason (scoring chance and recent
+            blanks), no sanity flag and odds ≥ {odds2(settings.dataRuleMinOdds)}. Hover a leg to see its reason.
+          </>
+        ) : settings.selection === "likeliest" ? (
           <>
             Selection rule: <strong>likeliest</strong> — a leg qualifies with no sanity flag; handicaps only on the
             favourite&apos;s side. The best leg is the most probable one, not the best value.
@@ -156,10 +161,12 @@ export default async function FixturesPage(props: PageProps<"/fixtures">) {
                   <TableCell>
                     {f.best ? (
                       <M v={f.modelVersion}>
-                        {f.best.market} {selectionLabel(f.best.market, f.best.selection, f.best.line)} @{" "}
+                        <span title={f.best.qualifyReason ?? undefined}>
+                        {marketLabel(f.best.market)} {selectionLabel(f.best.market, f.best.selection, f.best.line)} @{" "}
                         {odds2(f.best.odds)} (
-                        {settings.selection === "likeliest" ? pct1(f.best.pFinal) : pctSigned(f.best.edge)})
+                        {settings.selection === "value" ? pctSigned(f.best.edge) : pct1(f.best.pFinal)})
                         {f.nQualifying > 1 && ` +${f.nQualifying - 1} more`}
+                        </span>
                       </M>
                     ) : f.predictionId ? (
                       <span className="text-muted-foreground">none</span>

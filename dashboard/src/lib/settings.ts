@@ -8,8 +8,10 @@ import { parse } from "smol-toml";
 // Tunables live in config/settings.toml (CLAUDE.md §5). The dashboard reads the few
 // it needs to label things the same way the engine does; it never changes them.
 
-/** docs/05 §8: which leg-selection rule `make picks` uses (value.selection). */
-export type Strategy = "likeliest" | "value";
+/** docs/05 §8-9: which leg-selection rule `make picks` uses (value.selection). */
+export type Strategy = "data_rule" | "likeliest" | "value";
+
+const STRATEGY_VALUES: readonly Strategy[] = ["data_rule", "likeliest", "value"];
 
 export type EngineSettings = {
   modelVersion: string;
@@ -19,6 +21,8 @@ export type EngineSettings = {
   minEdgeLeg: number;
   minOdds: number;
   maxOdds: number;
+  /** value.data_rule.min_odds (docs/05 §9). */
+  dataRuleMinOdds: number;
 };
 
 export function settingsPath(): string {
@@ -38,11 +42,15 @@ export function loadSettings(): EngineSettings {
   const value = raw.value ?? {};
   return {
     modelVersion: String(model.version ?? "unknown"),
-    selection: value.selection === "value" ? "value" : "likeliest",
+    selection: STRATEGY_VALUES.includes(value.selection as Strategy) ? (value.selection as Strategy) : "value",
     horizonHours: num(general.horizon_hours, "general.horizon_hours"),
     minEdgeLeg: num(value.min_edge_leg, "value.min_edge_leg"),
     minOdds: num(value.min_odds, "value.min_odds"),
     maxOdds: num(value.max_odds, "value.max_odds"),
+    dataRuleMinOdds: num(
+      (value.data_rule as Record<string, unknown> | undefined)?.min_odds,
+      "value.data_rule.min_odds",
+    ),
   };
 }
 

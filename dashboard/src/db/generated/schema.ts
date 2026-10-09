@@ -189,29 +189,6 @@ export const matches = sqliteTable("matches", {
 	index("ix_matches_league_id").on(table.leagueId),
 ]);
 
-export const slips = sqliteTable("slips", {
-	slipType: text("slip_type").notNull(),
-	slipDate: numeric("slip_date").notNull(),
-	windowStartUtc: numeric("window_start_utc").notNull(),
-	windowEndUtc: numeric("window_end_utc").notNull(),
-	totalOdds: real("total_odds").notNull(),
-	pAllWin: real("p_all_win").notNull(),
-	expectedMultiplier: real("expected_multiplier").notNull(),
-	bookingCode: text("booking_code"),
-	bookingStatus: text("booking_status").default("pending").notNull(),
-	bookingError: text("booking_error"),
-	mode: text().default("paper").notNull(),
-	stake: real(),
-	status: text().default("open").notNull(),
-	returnMultiplier: real("return_multiplier"),
-	modelVersion: text("model_version").notNull(),
-	id: integer().primaryKey().notNull(),
-	createdAt: numeric("created_at").default(sql`(CURRENT_TIMESTAMP)`).notNull(),
-	updatedAt: numeric("updated_at").default(sql`(CURRENT_TIMESTAMP)`).notNull(),
-	pool: text().default("club").notNull(),
-	strategy: text().default("value").notNull(),
-});
-
 export const valueLegs = sqliteTable("value_legs", {
 	matchId: integer("match_id").notNull().references(() => matches.id, { onDelete: "restrict" } ),
 	predictionId: integer("prediction_id").notNull().references(() => predictions.id, { onDelete: "restrict" } ),
@@ -236,10 +213,34 @@ export const valueLegs = sqliteTable("value_legs", {
 	createdAt: numeric("created_at").default(sql`(CURRENT_TIMESTAMP)`).notNull(),
 	updatedAt: numeric("updated_at").default(sql`(CURRENT_TIMESTAMP)`).notNull(),
 	qualifies: integer(),
+	qualifyReason: text("qualify_reason"),
 },
 (table) => [
 	index("ix_value_legs_prediction_id").on(table.predictionId),
 	index("ix_value_legs_match_id").on(table.matchId),
 	index("ix_value_legs_odds_snapshot_id").on(table.oddsSnapshotId),
 ]);
+
+export const slips = sqliteTable("slips", {
+	slipType: text("slip_type").notNull(),
+	slipDate: numeric("slip_date").notNull(),
+	windowStartUtc: numeric("window_start_utc").notNull(),
+	windowEndUtc: numeric("window_end_utc").notNull(),
+	totalOdds: real("total_odds").notNull(),
+	pAllWin: real("p_all_win").notNull(),
+	expectedMultiplier: real("expected_multiplier").notNull(),
+	bookingCode: text("booking_code"),
+	bookingStatus: text("booking_status").default("pending").notNull(),
+	bookingError: text("booking_error"),
+	mode: text().default("paper").notNull(),
+	stake: real(),
+	status: text().default("open").notNull(),
+	returnMultiplier: real("return_multiplier"),
+	modelVersion: text("model_version").notNull(),
+	id: integer().primaryKey().notNull(),
+	createdAt: numeric("created_at").default(sql`(CURRENT_TIMESTAMP)`).notNull(),
+	updatedAt: numeric("updated_at").default(sql`(CURRENT_TIMESTAMP)`).notNull(),
+	pool: text().default("club").notNull(),
+	strategy: text().default("value").notNull(),
+});
 

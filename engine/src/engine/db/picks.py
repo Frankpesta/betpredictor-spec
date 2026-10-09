@@ -15,10 +15,10 @@ from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 from typing import TYPE_CHECKING, Any, cast
 
-from sqlalchemy import delete, func, select
+from sqlalchemy import delete, func, or_, select
 from sqlalchemy.orm import Session
 
-from engine.config import LeagueDef, Settings
+from engine.config import LEAGUES, LeagueDef, Settings
 from engine.db.base import utcnow
 from engine.db.model_runs import fit_and_store
 from engine.db.models import (
@@ -33,8 +33,18 @@ from engine.db.models import (
 )
 from engine.db.session import session_scope
 from engine.logging import get_logger
+from engine.model.half_time import HalfTimeParams, half_matrix
 from engine.model.league import StoredModel
-from engine.model.markets import Market, OutcomeProbs, Selection, price_selection
+from engine.model.markets import (
+    SELECTIONS_BY_MARKET,
+    Market,
+    OutcomeProbs,
+    Period,
+    Selection,
+    is_binary,
+    price_selection,
+    split_period,
+)
 from engine.model.score_matrix import AbsurdRatesError, to_json_list
 from engine.slips.builder import (
     MID_WINDOW,
@@ -45,8 +55,15 @@ from engine.slips.builder import (
     weekend_window,
 )
 from engine.slips.constraints import SPORTYBET_MAX_SELECTIONS, Leg
-from engine.value.edge import LegValue, evaluate_pair
-from engine.value.selection import favourite_side, qualifies_likeliest
+from engine.value.edge import LegValue, evaluate_group
+from engine.value.selection import (
+    TeamData,
+    favourite_side,
+    p_scores,
+    qualifies_data_rule,
+    qualifies_likeliest,
+    team_data,
+)
 
 if TYPE_CHECKING:
     from engine.jobs import JobContext
@@ -54,8 +71,9 @@ if TYPE_CHECKING:
 log = get_logger(__name__)
 
 MAX_MODEL_AGE = timedelta(days=7)  # docs/05 §1.1
+HALF_LABEL = {"1H": "1st half", "2H": "2nd half"}
 STALE_ODDS_AGE = timedelta(hours=3)  # docs/05 §1.3
-PAIRS = {"AH": ("home", "away"), "OU": ("over", "under")}
+PAIRS = SELECTIONS_BY_MARKET  # every selection of a market, in group order (docs/05 §10)
 
 
 @dataclass
@@ -71,6 +89,49 @@ class PicksReport:
         default_factory=lambda: defaultdict(list)
     )
     slips: dict[str, str] = field(default_factory=dict)
+    # (team, period) -> the team's goals in that period of its recent matches
+    goals_for: dict[tuple[int, str], list[int]] = field(default_factory=dict)
+
+
+def recent_goals_for(
+    session: Session,
+    team_id: int,
+    n: int,
+    before: datetime,
+    report: PicksReport,
+    period: Period = "FT",
+) -> list[int]:
+    """docs/05 §9 / docs/10: the team's goals in its last `n` finished matches (newest
+    first), full time or in one half (then only matches with half-time goals), cached."""
+    key = (team_id, period)
+    if key not in report.goals_for:
+        q = select(
+            Match.home_team_id,
+            Match.home_goals,
+            Match.away_goals,
+            Match.ht_home_goals,
+            Match.ht_away_goals,
+        ).where(
+            or_(Match.home_team_id == team_id, Match.away_team_id == team_id),
+            Match.status == "finished",
+            Match.home_goals.is_not(None),
+            Match.away_goals.is_not(None),
+            Match.kickoff_utc < before,
+        )
+        if period != "FT":
+            q = q.where(Match.ht_home_goals.is_not(None), Match.ht_away_goals.is_not(None))
+        rows = session.execute(q.order_by(Match.kickoff_utc.desc(), Match.id.desc()).limit(n)).all()
+        goals: list[int] = []
+        for home, hg, ag, hth, hta in rows:
+            ft, ht = (hg, hth) if home == team_id else (ag, hta)
+            assert ft is not None  # filtered in the query
+            if period == "FT":
+                goals.append(ft)
+            else:
+                assert ht is not None
+                goals.append(ht if period == "1H" else ft - ht)
+        report.goals_for[key] = goals
+    return report.goals_for[key]
 
 
 def _price(mat: Any, market: str, selection: str, line: float) -> OutcomeProbs:
@@ -100,6 +161,8 @@ def ensure_fresh_run(
         run is None
         or run.fitted_at < now - MAX_MODEL_AGE
         or (newest is not None and run.fitted_at < newest)
+        # docs/10: club runs saved before the half-time model have no "half_time" key
+        or (not LEAGUES[league.key].international and "half_time" not in run.params_json)
     )
     if stale:
         run = fit_and_store(session, league, settings, now).run
@@ -197,20 +260,32 @@ def price_match(
     v = settings.value
     pool = "intl" if lg.international else "club"
     priced: list[tuple[str, float, OddsSnapshot, LegValue]] = []
+    mats: dict[Period, Any] = {"FT": mat}
+    ht = None if model.half_time is None else HalfTimeParams.from_json(model.half_time)
+    if ht is not None:
+        lam, mu = model.rates(
+            match.home_team_id, match.away_team_id, settings.model.xg_blend_weight, match.neutral
+        )
+        mats["1H"] = half_matrix(lam, mu, ht, 1, settings.model.max_goals)
+        mats["2H"] = half_matrix(lam, mu, ht, 2, settings.model.max_goals)
     for (market, line), sides in sorted(by_key.items()):
+        if market not in v.markets:
+            report.skipped["market_not_enabled"] += len(sides)
+            continue
+        if split_period(market)[1] not in mats:
+            report.skipped["no_half_time_model"] += len(sides)  # INTL (docs/10) or too few
+            continue
         sels = PAIRS[market]
         if not all(s in sides for s in sels):
-            report.skipped["missing_pair"] += len(sides)  # odds.py stores pairs; defensive
+            report.skipped["missing_pair"] += len(sides)  # odds.py stores groups; defensive
             continue
-        a, b = sides[sels[0]], sides[sels[1]]
-        legs = evaluate_pair(
+        snaps_k = tuple(sides[s] for s in sels)
+        legs = evaluate_group(
+            market,
             line,
             sels,
-            (
-                _price(mat, market, sels[0], line),
-                _price(mat, market, sels[1], line),
-            ),
-            (a.odds, b.odds),
+            tuple(_price(mats[split_period(market)[1]], market, s, line) for s in sels),
+            tuple(sn.odds for sn in snaps_k),
             low_confidence=low,
             minutes_to_kickoff=minutes,
             stale_prediction=stale_pred,
@@ -220,7 +295,7 @@ def price_match(
             max_odds=v.max_odds,
             max_model_market_gap=v.max_model_market_gap,
         )
-        priced += [(market, line, a, legs[0]), (market, line, b, legs[1])]
+        priced += [(market, line, sn, lv) for sn, lv in zip(snaps_k, legs, strict=True)]
     # docs/05 §8: the favourite comes from the blended AH probabilities of this batch
     favourite = favourite_side(
         {
@@ -229,13 +304,46 @@ def price_match(
             if market == "AH" and lv.selection == "home"
         }
     )
+    teams: dict[Period, dict[str, TeamData]] = {}
+    if v.selection == "data_rule":
+        for period in sorted({split_period(m)[1] for m, *_ in priced}):
+            cfg = v.data_rule if period == "FT" else v.data_rule_half
+            pmat = mats[period]
+            teams[period] = {
+                side: team_data(
+                    p, recent_goals_for(session, tid, cfg.form_games, now, report, period)
+                )
+                for side, tid, p in zip(
+                    ("home", "away"),
+                    (match.home_team_id, match.away_team_id),
+                    p_scores(pmat),
+                    strict=True,
+                )
+            }
     for market, line, snap, lv in priced:
-        if v.selection == "likeliest":
+        why: str | None = None
+        base, period = split_period(market)
+        if v.selection == "data_rule":
+            why = qualifies_data_rule(
+                lv.reasons,
+                base,
+                line,
+                lv.selection,
+                lv.odds,
+                lv.p_final,
+                teams[period]["home"],
+                teams[period]["away"],
+                v.data_rule if period == "FT" else v.data_rule_half,
+            )
+            if why is not None and period != "FT":
+                why = f"{HALF_LABEL[period]}: {why}"
+            ok = why is not None
+        elif v.selection == "likeliest":
             ok = qualifies_likeliest(lv.reasons, market, lv.selection, favourite)
         else:
             ok = lv.qualifies
-        probs = _price(mat, market, lv.selection, line)
-        half = not lv.reasons or "non_half_line_v1" not in lv.reasons
+        probs = _price(mats[period], market, lv.selection, line)
+        half = is_binary(market, line)
         row = ValueLeg(
             match_id=match.id,
             prediction_id=pred.id,
@@ -258,6 +366,7 @@ def price_match(
             sanity_status="flagged" if lv.reasons else "ok",
             sanity_reason=",".join(lv.reasons) or None,
             qualifies=ok,
+            qualify_reason=why,
         )
         session.add(row)
         session.flush()
@@ -396,9 +505,10 @@ def build_slips(session: Session, settings: Settings, now: datetime, report: Pic
                 report.slips[key] = "kept existing booked/settled slip"
                 continue
             if chosen is None:
-                report.slips[key] = (
-                    "none — no value" if strategy == "value" else "none — no feasible combination"
-                )
+                report.slips[key] = {
+                    "value": "none — no value",
+                    "data_rule": "none — too few legs pass the data rule",
+                }.get(strategy, "none — no feasible combination")
                 continue
             slip = store_slip(session, slip_type, pool, slip_date, window, chosen, ids, settings)
             t = chosen.totals

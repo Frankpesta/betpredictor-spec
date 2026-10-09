@@ -33,7 +33,7 @@ EVENT = "/factsCenter/event"
 OUTCOMES = "/factsCenter/Outcomes"
 SHARE = "/orders/share"
 SPORT_FOOTBALL = "sr:sport:1"
-ODDS_MARKET_IDS = f"{mk.AH_MARKET_ID},{mk.OU_MARKET_ID}"
+ODDS_MARKET_IDS = ",".join(mk.MARKET_SPECS)  # AH, OU + docs/05 §10 markets
 PRODUCT_ID_PREMATCH = "3"
 
 

@@ -1,0 +1,471 @@
+{
+ "bizCode": 10000,
+ "_note": "trimmed: first EPL event, new markets only",
+ "data": [
+  {
+   "events": [
+    {
+     "eventId": "sr:match:72221292",
+     "homeTeamName": "Arsenal",
+     "awayTeamName": "Leeds United",
+     "estimateStartTime": 1791631800000,
+     "status": 0,
+     "matchStatus": "Not start",
+     "markets": [
+      {
+       "id": "1",
+       "product": 3,
+       "desc": "1X2",
+       "status": 0,
+       "group": "Main",
+       "groupId": "171121135724MGI11262166",
+       "marketGuide": "Which team will win the match. Overtime not included.",
+       "title": "1,X,2",
+       "name": "1X2",
+       "favourite": 0,
+       "outcomes": [
+        {
+         "id": "1",
+         "odds": "1.44",
+         "probability": "0.6840550000",
+         "voidProbability": "0E-10",
+         "isActive": 1,
+         "desc": "Home",
+         "oddsBoostLfb": false
+        },
+        {
+         "id": "2",
+         "odds": "5.02",
+         "probability": "0.1925100000",
+         "voidProbability": "0E-10",
+         "isActive": 1,
+         "desc": "Draw",
+         "oddsBoostLfb": true
+        },
+        {
+         "id": "3",
+         "odds": "7.81",
+         "probability": "0.1234370000",
+         "voidProbability": "0E-10",
+         "isActive": 1,
+         "desc": "Away",
+         "oddsBoostLfb": true
+        }
+       ],
+       "farNearOdds": 0,
+       "marketExtendVOS": [
+        {
+         "name": "2UP",
+         "rootMarketId": "1",
+         "nodeMarketId": "60100",
+         "notSupport": false
+        },
+        {
+         "name": "1UP",
+         "rootMarketId": "1",
+         "nodeMarketId": "60200",
+         "notSupport": false
+        }
+       ],
+       "sourceType": "BET_RADAR",
+       "lastOddsChangeTime": 1791459018615,
+       "earlyPayoutMarkets": [
+        {
+         "name": "1UP",
+         "sourceMarketId": "1",
+         "sourceSpecifier": "",
+         "mappedMarketId": "60200",
+         "mappedSpecifier": "",
+         "supported": true
+        },
+        {
+         "name": "2UP",
+         "sourceMarketId": "1",
+         "sourceSpecifier": "",
+         "mappedMarketId": "60100",
+         "mappedSpecifier": "",
+         "supported": true
+        },
+        {
+         "name": "one_x_two_never_down",
+         "sourceMarketId": "1",
+         "sourceSpecifier": "",
+         "mappedMarketId": "60210",
+         "mappedSpecifier": "",
+         "supported": true
+        }
+       ],
+       "banned": false
+      },
+      {
+       "id": "10",
+       "product": 3,
+       "desc": "Double Chance",
+       "status": 0,
+       "group": "Main",
+       "groupId": "171121135724MGI11262166",
+       "marketGuide": "Predict the match result combining two of the three possible outcomes (1X, X2 or 12).",
+       "title": "1X,12,X2",
+       "name": "Double Chance",
+       "favourite": 0,
+       "outcomes": [
+        {
+         "id": "9",
+         "odds": "1.11",
+         "probability": "0.8766371833",
+         "voidProbability": "0E-10",
+         "isActive": 1,
+         "desc": "Home or Draw"
+        },
+        {
+         "id": "10",
+         "odds": "1.19",
+         "probability": "0.8051890120",
+         "voidProbability": "0E-10",
+         "isActive": 1,
+         "desc": "Home or Away"
+        },
+        {
+         "id": "11",
+         "odds": "2.70",
+         "probability": "0.3181738059",
+         "voidProbability": "0E-10",
+         "isActive": 1,
+         "desc": "Draw or Away"
+        }
+       ],
+       "farNearOdds": 0,
+       "sourceType": "BET_RADAR",
+       "lastOddsChangeTime": 1791459018615,
+       "earlyPayoutMarkets": [
+        {
+         "name": "double_chance_one_up",
+         "sourceMarketId": "10",
+         "sourceSpecifier": "",
+         "mappedMarketId": "60110",
+         "mappedSpecifier": "",
+         "supported": true
+        }
+       ],
+       "banned": false
+      },
+      {
+       "id": "19",
+       "specifier": "total=0.5",
+       "product": 3,
+       "desc": "Arsenal Over/Under",
+       "status": 0,
+       "group": "Goals",
+       "groupId": "171121144758MGI11271357",
+       "marketGuide": "Predict whether the total number of goals scored by the Home team in regular time is over/under a given line.",
+       "title": "",
+       "name": "Home O/U",
+       "favourite": 0,
+       "outcomes": [
+        {
+         "id": "12",
+         "odds": "1.12",
+         "probability": "0.8694191936",
+         "voidProbability": "0E-10",
+         "isActive": 1,
+         "desc": "Over 0.5"
+        },
+        {
+         "id": "13",
+         "odds": "6.30",
+         "probability": "0.1305808521",
+         "voidProbability": "0E-10",
+         "isActive": 1,
+         "desc": "Under 0.5"
+        }
+       ],
+       "farNearOdds": 0,
+       "sourceType": "BET_RADAR",
+       "lastOddsChangeTime": 1791459019000,
+       "banned": false
+      },
+      {
+       "id": "19",
+       "specifier": "total=1.5",
+       "product": 3,
+       "desc": "Arsenal Over/Under",
+       "status": 0,
+       "group": "Goals",
+       "groupId": "171121144758MGI11271357",
+       "marketGuide": "Predict whether the total number of goals scored by the Home team in regular time is over/under a given line.",
+       "title": "",
+       "name": "Home O/U",
+       "favourite": 1,
+       "outcomes": [
+        {
+         "id": "12",
+         "odds": "1.58",
+         "probability": "0.6073699459",
+         "voidProbability": "0E-10",
+         "isActive": 1,
+         "desc": "Over 1.5"
+        },
+        {
+         "id": "13",
+         "odds": "2.40",
+         "probability": "0.3926300552",
+         "voidProbability": "0E-10",
+         "isActive": 1,
+         "desc": "Under 1.5"
+        }
+       ],
+       "farNearOdds": 1,
+       "sourceType": "BET_RADAR",
+       "lastOddsChangeTime": 1791459019000,
+       "banned": false
+      },
+      {
+       "id": "19",
+       "specifier": "total=2.5",
+       "product": 3,
+       "desc": "Arsenal Over/Under",
+       "status": 0,
+       "group": "Goals",
+       "groupId": "171121144758MGI11271357",
+       "marketGuide": "Predict whether the total number of goals scored by the Home team in regular time is over/under a given line.",
+       "title": "",
+       "name": "Home O/U",
+       "favourite": 0,
+       "outcomes": [
+        {
+         "id": "12",
+         "odds": "2.75",
+         "probability": "0.3372014561",
+         "voidProbability": "0E-10",
+         "isActive": 1,
+         "desc": "Over 2.5"
+        },
+        {
+         "id": "13",
+         "odds": "1.45",
+         "probability": "0.6627985512",
+         "voidProbability": "0E-10",
+         "isActive": 1,
+         "desc": "Under 2.5"
+        }
+       ],
+       "farNearOdds": 0,
+       "sourceType": "BET_RADAR",
+       "lastOddsChangeTime": 1791459019000,
+       "banned": false
+      },
+      {
+       "id": "19",
+       "specifier": "total=3.5",
+       "product": 3,
+       "desc": "Arsenal Over/Under",
+       "status": 0,
+       "group": "Goals",
+       "groupId": "171121144758MGI11271357",
+       "marketGuide": "Predict whether the total number of goals scored by the Home team in regular time is over/under a given line.",
+       "title": "",
+       "name": "Home O/U",
+       "favourite": 0,
+       "outcomes": [
+        {
+         "id": "12",
+         "odds": "5.60",
+         "probability": "0.1522800000",
+         "voidProbability": "0E-10",
+         "isActive": 1,
+         "desc": "Over 3.5"
+        },
+        {
+         "id": "13",
+         "odds": "1.15",
+         "probability": "0.8477200000",
+         "voidProbability": "0E-10",
+         "isActive": 1,
+         "desc": "Under 3.5"
+        }
+       ],
+       "farNearOdds": 0,
+       "sourceType": "BET_RADAR",
+       "lastOddsChangeTime": 1791459019000,
+       "banned": false
+      },
+      {
+       "id": "19",
+       "specifier": "total=4.5",
+       "product": 3,
+       "desc": "Arsenal Over/Under",
+       "status": 0,
+       "group": "Goals",
+       "groupId": "171121144758MGI11271357",
+       "marketGuide": "Predict whether the total number of goals scored by the Home team in regular time is over/under a given line.",
+       "title": "",
+       "name": "Home O/U",
+       "favourite": 0,
+       "outcomes": [
+        {
+         "id": "12",
+         "odds": "11.50",
+         "probability": "0.0572073427",
+         "voidProbability": "0E-10",
+         "isActive": 1,
+         "desc": "Over 4.5"
+        },
+        {
+         "id": "13",
+         "odds": "1.04",
+         "probability": "0.9427927731",
+         "voidProbability": "0E-10",
+         "isActive": 1,
+         "desc": "Under 4.5"
+        }
+       ],
+       "farNearOdds": -1,
+       "sourceType": "BET_RADAR",
+       "lastOddsChangeTime": 1791459019000,
+       "banned": false
+      },
+      {
+       "id": "20",
+       "specifier": "total=0.5",
+       "product": 3,
+       "desc": "Leeds United Over/Under",
+       "status": 0,
+       "group": "Goals",
+       "groupId": "171121144758MGI11271357",
+       "marketGuide": "Predict whether the total number of goals scored by Away team in regular time is over/under a given line.",
+       "title": "",
+       "name": "Away O/U",
+       "favourite": 1,
+       "outcomes": [
+        {
+         "id": "12",
+         "odds": "1.84",
+         "probability": "0.5176900000",
+         "voidProbability": "0E-10",
+         "isActive": 1,
+         "desc": "Over 0.5"
+        },
+        {
+         "id": "13",
+         "odds": "1.97",
+         "probability": "0.4823100000",
+         "voidProbability": "0E-10",
+         "isActive": 1,
+         "desc": "Under 0.5"
+        }
+       ],
+       "farNearOdds": 1,
+       "sourceType": "BET_RADAR",
+       "lastOddsChangeTime": 1791459019000,
+       "banned": false
+      },
+      {
+       "id": "20",
+       "specifier": "total=1.5",
+       "product": 3,
+       "desc": "Leeds United Over/Under",
+       "status": 0,
+       "group": "Goals",
+       "groupId": "171121144758MGI11271357",
+       "marketGuide": "Predict whether the total number of goals scored by Away team in regular time is over/under a given line.",
+       "title": "",
+       "name": "Away O/U",
+       "favourite": 0,
+       "outcomes": [
+        {
+         "id": "12",
+         "odds": "5.20",
+         "probability": "0.1667593420",
+         "voidProbability": "0E-10",
+         "isActive": 1,
+         "desc": "Over 1.5"
+        },
+        {
+         "id": "13",
+         "odds": "1.17",
+         "probability": "0.8332406587",
+         "voidProbability": "0E-10",
+         "isActive": 1,
+         "desc": "Under 1.5"
+        }
+       ],
+       "farNearOdds": 0,
+       "sourceType": "BET_RADAR",
+       "lastOddsChangeTime": 1791459019000,
+       "banned": false
+      },
+      {
+       "id": "20",
+       "specifier": "total=2.5",
+       "product": 3,
+       "desc": "Leeds United Over/Under",
+       "status": 0,
+       "group": "Goals",
+       "groupId": "171121144758MGI11271357",
+       "marketGuide": "Predict whether the total number of goals scored by Away team in regular time is over/under a given line.",
+       "title": "",
+       "name": "Away O/U",
+       "favourite": 0,
+       "outcomes": [
+        {
+         "id": "12",
+         "odds": "14.00",
+         "probability": "0.0381486794",
+         "voidProbability": "0E-10",
+         "isActive": 1,
+         "desc": "Over 2.5"
+        },
+        {
+         "id": "13",
+         "odds": "1.02",
+         "probability": "0.9618605445",
+         "voidProbability": "0E-10",
+         "isActive": 1,
+         "desc": "Under 2.5"
+        }
+       ],
+       "farNearOdds": -1,
+       "sourceType": "BET_RADAR",
+       "lastOddsChangeTime": 1791459019000,
+       "banned": false
+      },
+      {
+       "id": "29",
+       "product": 3,
+       "desc": "GG/NG",
+       "status": 0,
+       "group": "Main",
+       "groupId": "171121135724MGI11262166",
+       "marketGuide": "Predict whether both teams will score in the match at regular time. *Yes (GG both teams score) *No (NG any team not to score ).",
+       "title": "GG,NG",
+       "name": "GG/NG",
+       "favourite": 0,
+       "outcomes": [
+        {
+         "id": "74",
+         "odds": "2.10",
+         "probability": "0.4506560000",
+         "voidProbability": "0E-10",
+         "isActive": 1,
+         "desc": "Yes"
+        },
+        {
+         "id": "76",
+         "odds": "1.74",
+         "probability": "0.5493440000",
+         "voidProbability": "0E-10",
+         "isActive": 1,
+         "desc": "No"
+        }
+       ],
+       "farNearOdds": 0,
+       "sourceType": "BET_RADAR",
+       "lastOddsChangeTime": 1791459018615,
+       "banned": false
+      }
+     ]
+    }
+   ]
+  }
+ ]
+}

@@ -124,7 +124,14 @@ export default async function FixturePage(props: PageProps<"/fixtures/[id]">) {
                                 flagged: {l.sanityReason ?? "?"}
                               </Badge>
                             ) : qualifies(l, settings) ? (
-                              <Badge className="bg-emerald-600 text-white">qualifies</Badge>
+                              <>
+                                <Badge className="bg-emerald-600 text-white">qualifies</Badge>
+                                {l.qualifyReason && (
+                                  <span className="mt-1 block text-[0.7rem] text-muted-foreground">
+                                    {l.qualifyReason}
+                                  </span>
+                                )}
+                              </>
                             ) : (
                               <span className="text-muted-foreground">ok</span>
                             )}

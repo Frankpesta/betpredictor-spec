@@ -26,7 +26,14 @@ from engine.db.models import League, Match, Slip, SlipLeg, ValueLeg
 from engine.db.session import session_scope
 from engine.ingest.fetch import BlockedError, FetchError
 from engine.logging import get_logger
-from engine.model.markets import Market, Result, Selection, result_multiplier, settle
+from engine.model.markets import (
+    Market,
+    Result,
+    Selection,
+    result_multiplier,
+    settle,
+    split_period,
+)
 from engine.sportybet.client import SportyBetClient, make_transport
 from engine.sportybet.markets import SportyBetPayloadError
 from engine.sportybet.results import PAGE_SIZE, RESULTS_PATH, SbResult, day_window_ms, parse_results
@@ -171,17 +178,20 @@ def run_settle(ctx: JobContext) -> str:
                 .where(SlipLeg.result == "pending", Match.kickoff_utc < now - SETTLE_AFTER)
                 .order_by(Match.kickoff_utc, SlipLeg.id)
             ).all()
-            decided: dict[int, tuple[str, tuple[int, int] | None]] = {}
+            decided: dict[int, Decision] = {}
             for sl, vl, m, lg in rows:
                 if m.id not in decided:
                     decided[m.id] = _decide(cache, lg.key, m, report)
-                verdict, score = decided[m.id]
-                if verdict == "wait":
+                d = decided[m.id]
+                if d.verdict == "wait":
                     report.legs_waiting += 1
                     continue
-                result, mult = settle_leg(
-                    vl.market, vl.line, vl.selection, vl.odds, None if verdict == "void" else score
-                )
+                score = None if d.verdict == "void" else period_score(d, vl.market)
+                if d.verdict == "score" and score is None:
+                    report.legs_waiting += 1  # half-time leg, half-time score not known yet
+                    report.no_result.append(f"match {m.id}: no half-time score for {vl.market}")
+                    continue
+                result, mult = settle_leg(vl.market, vl.line, vl.selection, vl.odds, score)
                 sl.result, sl.result_multiplier = result, mult
                 report.legs_settled += 1
                 touched_slips.add(sl.slip_id)
@@ -219,16 +229,33 @@ def run_settle(ctx: JobContext) -> str:
     return "\n".join(lines)
 
 
-def _decide(
-    cache: _ResultCache, league_key: str, m: Match, report: SettleReport
-) -> tuple[str, tuple[int, int] | None]:
-    """→ ('score', (h, a)) | ('void', None) | ('wait', None)."""
+@dataclass(frozen=True)
+class Decision:
+    verdict: str  # score | void | wait
+    full_time: tuple[int, int] | None = None
+    first_half: tuple[int, int] | None = None  # docs/10 §3; None = unknown
+
+
+def period_score(d: Decision, market: str) -> tuple[int, int] | None:
+    """docs/10 §3: the score a market settles on — full time, first half, or second half
+    (full time − first half). None when a half-time score is needed but unknown."""
+    _, period = split_period(market)
+    if period == "FT":
+        return d.full_time
+    if d.first_half is None or d.full_time is None:
+        return None
+    if period == "1H":
+        return d.first_half
+    return (d.full_time[0] - d.first_half[0], d.full_time[1] - d.first_half[1])
+
+
+def _decide(cache: _ResultCache, league_key: str, m: Match, report: SettleReport) -> Decision:
     label = f"match {m.id} ({m.sportybet_event_id or 'no SB id'})"
     if m.status == "needs_review":
         report.needs_review.append(label)
-        return "wait", None
+        return Decision("wait")
     if m.status in VOID_MATCH_STATUSES:
-        return "void", None
+        return Decision("void")
     try:
         sb = _sb_result(cache, league_key, m)
     except (FetchError, SportyBetPayloadError) as exc:
@@ -236,7 +263,7 @@ def _decide(
         sb = None
     if sb is not None and not sb.ended:
         report.unknown_status.append(f"{label}: status {sb.status} '{sb.match_status}'")
-        return "wait", None
+        return Decision("wait")
     db = (
         (m.home_goals, m.away_goals)
         if m.status == "finished" and m.home_goals is not None and m.away_goals is not None
@@ -249,11 +276,30 @@ def _decide(
         log.warning(
             "results disagree; match marked needs_review", extra={"fields": {"match_id": m.id}}
         )
-        return "wait", None
+        return Decision("wait")
     if verdict == "none":
         report.no_result.append(label)
-        return "wait", None
+        return Decision("wait")
     assert score is not None
     if db is None:  # store SportyBet's 90-minute score as the match result
         m.home_goals, m.away_goals, m.status = score[0], score[1], "finished"
-    return "score", score
+    # docs/10 §3: first-half score, SportyBet primary / football-data secondary
+    db_ht = (
+        (m.ht_home_goals, m.ht_away_goals)
+        if m.ht_home_goals is not None and m.ht_away_goals is not None
+        else None
+    )
+    ht_verdict, ht = reconcile(sb.score_1h if sb else None, db_ht)
+    if ht_verdict == "conflict":
+        m.status = "needs_review"
+        report.needs_review.append(
+            f"{label}: half time SportyBet {sb.score_1h if sb else None} vs DB {db_ht}"
+        )
+        log.warning(
+            "half-time results disagree; match marked needs_review",
+            extra={"fields": {"match_id": m.id}},
+        )
+        return Decision("wait")
+    if ht is not None and db_ht is None:
+        m.ht_home_goals, m.ht_away_goals = ht
+    return Decision("score", score, ht)

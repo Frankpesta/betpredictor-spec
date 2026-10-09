@@ -162,14 +162,43 @@ class ModelCfg(_Strict):
         return v
 
 
+class DataRuleCfg(_Strict):
+    """docs/05 §9: the team-data leg rule (user decision 2026-10-02, engine 2026-10-08)."""
+
+    form_games: int = Field(ge=1)
+    min_form_games: int = Field(ge=0)
+    strong_score_p: float = Field(gt=0, le=1)
+    strong_max_blanks: int = Field(ge=0)
+    weak_score_p: float = Field(gt=0, le=1)
+    weak_min_blanks: int = Field(ge=0)
+    over_score_p: float = Field(gt=0, le=1)
+    over_max_blanks: int = Field(ge=0)
+    min_leg_probability: float = Field(ge=0, le=1)
+    min_odds: float = Field(gt=1)
+
+
 class ValueCfg(_Strict):
-    selection: Literal["likeliest", "value"]
+    selection: Literal["data_rule", "likeliest", "value"]
     market_shrink_weight: float = Field(ge=0, le=1)
     min_edge_leg: float
     max_model_market_gap: float = Field(gt=0, le=1)
     min_odds: float = Field(gt=1)
     max_odds: float = Field(gt=1)
     allowed_lines: Literal["half_only"]
+    # docs/05 §10 / docs/10 §3: markets `make picks` prices (odds for all are still stored)
+    markets: tuple[str, ...]
+    data_rule: DataRuleCfg
+    data_rule_half: DataRuleCfg  # docs/10 §5: same rule on one half's scoring
+
+    @field_validator("markets")
+    @classmethod
+    def _markets(cls, v: tuple[str, ...]) -> tuple[str, ...]:
+        from engine.model.markets import SELECTIONS_BY_MARKET
+
+        unknown = [m for m in v if m not in SELECTIONS_BY_MARKET]
+        if unknown:
+            raise ValueError(f"unknown market codes {unknown}")
+        return v
 
     @model_validator(mode="after")
     def _odds(self) -> ValueCfg:
@@ -233,6 +262,12 @@ class SlipsCfg(_Strict):
     mega_acca: MegaAccaCfg
 
 
+class HalfTimeCfg(_Strict):
+    """docs/10: split full-time model for first/second-half markets."""
+
+    min_matches: int = Field(ge=1)
+
+
 class BacktestCfg(_Strict):
     test_seasons: list[str] = Field(min_length=2)
     refit_every_days: int = Field(gt=0)
@@ -283,6 +318,7 @@ class Settings(BaseSettings):
     model: ModelCfg
     value: ValueCfg
     slips: SlipsCfg
+    half_time: HalfTimeCfg
     backtest: BacktestCfg
     gates: GatesCfg
     booking: BookingCfg

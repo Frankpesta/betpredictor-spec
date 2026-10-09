@@ -39,6 +39,7 @@ def test_settings_file_has_exactly_the_documented_sections() -> None:
         "model",
         "value",
         "slips",
+        "half_time",  # docs/10 §2
         "backtest",
         "gates",
         "booking",  # docs/04 §3.4 drift threshold (docs/discovered/sportybet/2026-09-27/booking.md)

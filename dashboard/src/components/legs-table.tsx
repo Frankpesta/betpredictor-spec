@@ -1,10 +1,10 @@
 import Link from "next/link";
 
-import { M } from "@/components/status-bits";
+import { M, UnvalidatedBadge } from "@/components/status-bits";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import type { LegView } from "@/db/queries";
 import { formatKickoff, odds2, orDash, pct1, pctSigned } from "@/lib/format";
-import { marketLabel, RESULT_LABEL, selectionLabel } from "@/lib/labels";
+import { isUnvalidatedMarket, marketLabel, RESULT_LABEL, selectionLabel } from "@/lib/labels";
 
 type Props = { legs: LegView[]; modelVersion: string; showResults?: boolean };
 
@@ -40,8 +40,20 @@ export function LegsTable({ legs, modelVersion, showResults = false }: Props) {
                 </Link>
               </TableCell>
               <TableCell>{formatKickoff(l.kickoffUtc)}</TableCell>
-              <TableCell>{marketLabel(l.market)}</TableCell>
-              <TableCell>{selectionLabel(l.market, l.selection, l.line)}</TableCell>
+              <TableCell className="whitespace-normal">
+                {marketLabel(l.market)}
+                {isUnvalidatedMarket(l.market) && (
+                  <span className="ml-1.5">
+                    <UnvalidatedBadge title="No historical odds for this market: never ROI-backtested, judged on paper (docs/05 §10, docs/10)" />
+                  </span>
+                )}
+              </TableCell>
+              <TableCell className="whitespace-normal">
+                {selectionLabel(l.market, l.selection, l.line)}
+                {l.qualifyReason && (
+                  <span className="block text-[0.7rem] text-muted-foreground">{l.qualifyReason}</span>
+                )}
+              </TableCell>
               <TableCell className="text-right tabular-nums">{odds2(l.odds)}</TableCell>
               <TableCell className="text-right">
                 <M v={modelVersion}>{pct1(l.pFinal)}</M>

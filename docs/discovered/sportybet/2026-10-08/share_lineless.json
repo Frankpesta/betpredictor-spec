@@ -1,0 +1,36 @@
+{
+ "_note": "orders/share response 2026-10-08 (test code, lineless selections), trimmed to ticket",
+ "bizCode": 10000,
+ "data": {
+  "shareCode": "H4J8R8",
+  "ticket": {
+   "selections": [
+    {
+     "eventId": "sr:match:72513220",
+     "marketId": "29",
+     "outcomeId": "74",
+     "parentBetBuilderMarketId": "",
+     "sportId": "sr:sport:1",
+     "estimateStartTime": 1791570600000
+    },
+    {
+     "eventId": "sr:match:72036204",
+     "marketId": "10",
+     "outcomeId": "9",
+     "parentBetBuilderMarketId": "",
+     "sportId": "sr:sport:1",
+     "estimateStartTime": 1791571500000
+    },
+    {
+     "eventId": "sr:match:72478616",
+     "marketId": "19",
+     "specifier": "total=0.5",
+     "outcomeId": "12",
+     "parentBetBuilderMarketId": "",
+     "sportId": "sr:sport:1",
+     "estimateStartTime": 1791572400000
+    }
+   ]
+  }
+ }
+}

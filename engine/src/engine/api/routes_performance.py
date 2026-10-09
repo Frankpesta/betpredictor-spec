@@ -19,7 +19,7 @@ from engine.api.routes_jobs import runner_of
 from engine.db.models import Slip, SlipLeg, ValueLeg
 from engine.db.session import session_scope
 from engine.model.calibration import ece, reliability_table
-from engine.model.markets import classify_line
+from engine.model.markets import is_binary
 
 router = APIRouter()
 
@@ -30,7 +30,7 @@ def calibration(
 ) -> dict[str, Any]:
     with session_scope(runner_of(request).db_path) as s:
         query = (
-            select(ValueLeg.id, ValueLeg.line, ValueLeg.p_final, SlipLeg.result)
+            select(ValueLeg.id, ValueLeg.market, ValueLeg.line, ValueLeg.p_final, SlipLeg.result)
             .join(SlipLeg, SlipLeg.value_leg_id == ValueLeg.id)
             .join(Slip, Slip.id == SlipLeg.slip_id)
             .where(SlipLeg.result != "pending")
@@ -41,12 +41,12 @@ def calibration(
         rows = s.execute(query).all()
 
     # A value leg can sit in several slips; calibrate each leg once.
-    legs: dict[int, tuple[float, float, str]] = {r[0]: (r[1], r[2], r[3]) for r in rows}
+    legs: dict[int, tuple[str, float, float, str]] = {r[0]: (r[1], r[2], r[3], r[4]) for r in rows}
     probs: list[float] = []
     outcomes: list[float] = []
     excluded: dict[str, int] = {}
-    for line, p_final, result in legs.values():
-        if classify_line(line) != "half":
+    for market, line, p_final, result in legs.values():
+        if not is_binary(market, line):
             excluded["not_half_line"] = excluded.get("not_half_line", 0) + 1
         elif result not in ("win", "loss"):
             excluded[f"result_{result}"] = excluded.get(f"result_{result}", 0) + 1

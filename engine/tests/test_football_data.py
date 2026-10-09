@@ -112,6 +112,33 @@ def test_parse_current_season_sample() -> None:
     assert not any(o.bookmaker == "PS" for o in r.odds)
     # away favourite (Hull v Man United) -> positive home handicap
     assert _odds(p.rows[1])[("B365", "open", "AH", "home")][0] == 1.5
+    # docs/10 §1: first-half goals (HTHG/HTAG)
+    assert (r.ht_home_goals, r.ht_away_goals) == (2, 0)
+    assert p.bad_ht_goals == 0
+
+
+@pytest.mark.parametrize(
+    ("ft", "ht", "expected", "bad"),
+    [
+        (("2", "1"), ("1", "0"), (1, 0), 0),
+        (("2", "1"), ("", ""), (None, None), 0),  # no half-time data: not an error
+        (("2", "1"), ("3", "0"), (None, None), 1),  # more than full time
+        (("2", "1"), ("1", ""), (None, None), 1),  # only one side
+        (("2", "1"), ("x", "0"), (None, None), 1),
+        (("", ""), ("1", "0"), (None, None), 0),  # unplayed: never carries half-time goals
+    ],
+)
+def test_half_time_goals(
+    ft: tuple[str, str], ht: tuple[str, str], expected: tuple[int | None, int | None], bad: int
+) -> None:
+    body = (
+        "Div,Date,Time,HomeTeam,AwayTeam,FTHG,FTAG,HTHG,HTAG\n"
+        f"E0,10/08/2019,15:00,Burnley,Southampton,{ft[0]},{ft[1]},{ht[0]},{ht[1]}\n"
+    )
+    p = fd.parse_csv(body.encode(), "E0")
+    (row,) = p.rows
+    assert (row.ht_home_goals, row.ht_away_goals) == expected
+    assert p.bad_ht_goals == bad
 
 
 def test_open_and_close_ah_lines_are_independent() -> None:

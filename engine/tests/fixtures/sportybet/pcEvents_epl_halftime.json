@@ -1,0 +1,1308 @@
+{
+ "bizCode": 10000,
+ "_note": "trimmed: first EPL event, half-time ids 60,63,66,68,69,70,75,83,85,88,90,91,92,95",
+ "data": [
+  {
+   "id": "sr:tournament:17",
+   "name": "Premier League",
+   "events": [
+    {
+     "eventId": "sr:match:72221292",
+     "homeTeamName": "Arsenal",
+     "awayTeamName": "Leeds United",
+     "estimateStartTime": 1791631800000,
+     "status": 0,
+     "matchStatus": "Not start",
+     "markets": [
+      {
+       "id": "60",
+       "product": 3,
+       "desc": "1st Half - 1X2",
+       "status": 0,
+       "group": "Half",
+       "groupId": "171121154448MGI11275318",
+       "marketGuide": "Which team will win the 1st Half.",
+       "title": "",
+       "name": "1st Half - 1X2",
+       "favourite": 0,
+       "outcomes": [
+        {
+         "id": "1",
+         "odds": "1.89",
+         "probability": "0.5044220000",
+         "voidProbability": "0E-10",
+         "isActive": 1,
+         "desc": "Home"
+        },
+        {
+         "id": "2",
+         "odds": "2.50",
+         "probability": "0.3731430000",
+         "voidProbability": "0E-10",
+         "isActive": 1,
+         "desc": "Draw"
+        },
+        {
+         "id": "3",
+         "odds": "7.50",
+         "probability": "0.1224340000",
+         "voidProbability": "0E-10",
+         "isActive": 1,
+         "desc": "Away"
+        }
+       ],
+       "farNearOdds": 0,
+       "sourceType": "BET_RADAR",
+       "lastOddsChangeTime": 1791461441776,
+       "banned": false
+      },
+      {
+       "id": "68",
+       "specifier": "total=1",
+       "product": 3,
+       "desc": "1st Half - Over/Under",
+       "status": 0,
+       "group": "Half",
+       "groupId": "171121154448MGI11275318",
+       "marketGuide": "Predict whether the total number of goals scored in 1st Half is over/under a given line. Quarter line (0.75; 1.25; 1.75 etc.) can be settled as won, lost or half won/half lost while the other half of the stake is returned. Half line (0.5; 1.5; 2.5 etc.) can be settled as won or lost. Whole line (1; 2; 3 etc.) can be settled as won, lost or void. For further information please refer to the “How to Play” section.",
+       "title": "",
+       "name": "1st Half - Over/Under",
+       "favourite": 1,
+       "outcomes": [
+        {
+         "id": "12",
+         "odds": "1.73",
+         "probability": "0.5596730000",
+         "voidProbability": "0E-10",
+         "isActive": 1,
+         "desc": "Over 1"
+        },
+        {
+         "id": "13",
+         "odds": "2.15",
+         "probability": "0.4403270000",
+         "voidProbability": "0E-10",
+         "isActive": 1,
+         "desc": "Under 1"
+        }
+       ],
+       "farNearOdds": 1,
+       "sourceType": "BET_RADAR",
+       "lastOddsChangeTime": 1791461442000,
+       "banned": false
+      },
+      {
+       "id": "68",
+       "specifier": "total=2",
+       "product": 3,
+       "desc": "1st Half - Over/Under",
+       "status": 0,
+       "group": "Half",
+       "groupId": "171121154448MGI11275318",
+       "marketGuide": "Predict whether the total number of goals scored in 1st Half is over/under a given line. Quarter line (0.75; 1.25; 1.75 etc.) can be settled as won, lost or half won/half lost while the other half of the stake is returned. Half line (0.5; 1.5; 2.5 etc.) can be settled as won or lost. Whole line (1; 2; 3 etc.) can be settled as won, lost or void. For further information please refer to the “How to Play” section.",
+       "title": "",
+       "name": "1st Half - Over/Under",
+       "favourite": 0,
+       "outcomes": [
+        {
+         "id": "12",
+         "odds": "5.20",
+         "probability": "0.1711760000",
+         "voidProbability": "0E-10",
+         "isActive": 1,
+         "desc": "Over 2"
+        },
+        {
+         "id": "13",
+         "odds": "1.18",
+         "probability": "0.8288240000",
+         "voidProbability": "0E-10",
+         "isActive": 1,
+         "desc": "Under 2"
+        }
+       ],
+       "farNearOdds": 0,
+       "sourceType": "BET_RADAR",
+       "lastOddsChangeTime": 1791461442000,
+       "banned": false
+      },
+      {
+       "id": "68",
+       "specifier": "total=3",
+       "product": 3,
+       "desc": "1st Half - Over/Under",
+       "status": 0,
+       "group": "Half",
+       "groupId": "171121154448MGI11275318",
+       "marketGuide": "Predict whether the total number of goals scored in 1st Half is over/under a given line. Quarter line (0.75; 1.25; 1.75 etc.) can be settled as won, lost or half won/half lost while the other half of the stake is returned. Half line (0.5; 1.5; 2.5 etc.) can be settled as won or lost. Whole line (1; 2; 3 etc.) can be settled as won, lost or void. For further information please refer to the “How to Play” section.",
+       "title": "",
+       "name": "1st Half - Over/Under",
+       "favourite": 0,
+       "outcomes": [
+        {
+         "id": "12",
+         "odds": "15.00",
+         "probability": "0.0423276963",
+         "voidProbability": "0E-10",
+         "isActive": 1,
+         "desc": "Over 3"
+        },
+        {
+         "id": "13",
+         "odds": "1.03",
+         "probability": "0.9576758731",
+         "voidProbability": "0E-10",
+         "isActive": 1,
+         "desc": "Under 3"
+        }
+       ],
+       "farNearOdds": -1,
+       "sourceType": "BET_RADAR",
+       "lastOddsChangeTime": 1791461442000,
+       "banned": false
+      },
+      {
+       "id": "68",
+       "specifier": "total=0.5",
+       "product": 3,
+       "desc": "1st Half - Over/Under",
+       "status": 0,
+       "group": "Half",
+       "groupId": "171121154448MGI11275318",
+       "marketGuide": "Predict whether the total number of goals scored in 1st Half is over/under a given line. Quarter line (0.75; 1.25; 1.75 etc.) can be settled as won, lost or half won/half lost while the other half of the stake is returned. Half line (0.5; 1.5; 2.5 etc.) can be settled as won or lost. Whole line (1; 2; 3 etc.) can be settled as won, lost or void. For further information please refer to the “How to Play” section.",
+       "title": "",
+       "name": "1st Half - Over/Under",
+       "favourite": 0,
+       "outcomes": [
+        {
+         "id": "12",
+         "odds": "1.36",
+         "probability": "0.7183320000",
+         "voidProbability": "0E-10",
+         "isActive": 1,
+         "desc": "Over 0.5"
+        },
+        {
+         "id": "13",
+         "odds": "3.30",
+         "probability": "0.2816680000",
+         "voidProbability": "0E-10",
+         "isActive": 1,
+         "desc": "Under 0.5"
+        }
+       ],
+       "farNearOdds": 0,
+       "sourceType": "BET_RADAR",
+       "lastOddsChangeTime": 1791461442000,
+       "banned": false
+      },
+      {
+       "id": "68",
+       "specifier": "total=1.5",
+       "product": 3,
+       "desc": "1st Half - Over/Under",
+       "status": 0,
+       "group": "Half",
+       "groupId": "171121154448MGI11275318",
+       "marketGuide": "Predict whether the total number of goals scored in 1st Half is over/under a given line. Quarter line (0.75; 1.25; 1.75 etc.) can be settled as won, lost or half won/half lost while the other half of the stake is returned. Half line (0.5; 1.5; 2.5 etc.) can be settled as won or lost. Whole line (1; 2; 3 etc.) can be settled as won, lost or void. For further information please refer to the “How to Play” section.",
+       "title": "",
+       "name": "1st Half - Over/Under",
+       "favourite": 0,
+       "outcomes": [
+        {
+         "id": "12",
+         "odds": "2.65",
+         "probability": "0.3580110000",
+         "voidProbability": "0E-10",
+         "isActive": 1,
+         "desc": "Over 1.5"
+        },
+        {
+         "id": "13",
+         "odds": "1.51",
+         "probability": "0.6419890000",
+         "voidProbability": "0E-10",
+         "isActive": 1,
+         "desc": "Under 1.5"
+        }
+       ],
+       "farNearOdds": 0,
+       "sourceType": "BET_RADAR",
+       "lastOddsChangeTime": 1791461442000,
+       "banned": false
+      },
+      {
+       "id": "68",
+       "specifier": "total=2.5",
+       "product": 3,
+       "desc": "1st Half - Over/Under",
+       "status": 0,
+       "group": "Half",
+       "groupId": "171121154448MGI11275318",
+       "marketGuide": "Predict whether the total number of goals scored in 1st Half is over/under a given line. Quarter line (0.75; 1.25; 1.75 etc.) can be settled as won, lost or half won/half lost while the other half of the stake is returned. Half line (0.5; 1.5; 2.5 etc.) can be settled as won or lost. Whole line (1; 2; 3 etc.) can be settled as won, lost or void. For further information please refer to the “How to Play” section.",
+       "title": "",
+       "name": "1st Half - Over/Under",
+       "favourite": 0,
+       "outcomes": [
+        {
+         "id": "12",
+         "odds": "6.50",
+         "probability": "0.1323721651",
+         "voidProbability": "0E-10",
+         "isActive": 1,
+         "desc": "Over 2.5"
+        },
+        {
+         "id": "13",
+         "odds": "1.13",
+         "probability": "0.8676278724",
+         "voidProbability": "0E-10",
+         "isActive": 1,
+         "desc": "Under 2.5"
+        }
+       ],
+       "farNearOdds": 0,
+       "sourceType": "BET_RADAR",
+       "lastOddsChangeTime": 1791461442000,
+       "banned": false
+      },
+      {
+       "id": "63",
+       "product": 3,
+       "desc": "1st Half - Double Chance",
+       "status": 0,
+       "group": "Half",
+       "groupId": "171121154448MGI11275318",
+       "marketGuide": "Predict the result of the 1st Half combining two of the three possible outcomes (1X, X2 or 12).",
+       "title": "1X,12,X2",
+       "name": "1st Half - Double Chance",
+       "favourite": 0,
+       "outcomes": [
+        {
+         "id": "9",
+         "odds": "1.11",
+         "probability": "0.8778474213",
+         "voidProbability": "0E-10",
+         "isActive": 1,
+         "desc": "Home or Draw"
+        },
+        {
+         "id": "10",
+         "odds": "1.49",
+         "probability": "0.6266261056",
+         "voidProbability": "0E-10",
+         "isActive": 1,
+         "desc": "Home or Away"
+        },
+        {
+         "id": "11",
+         "odds": "1.84",
+         "probability": "0.4955264817",
+         "voidProbability": "0E-10",
+         "isActive": 1,
+         "desc": "Draw or Away"
+        }
+       ],
+       "farNearOdds": 0,
+       "sourceType": "BET_RADAR",
+       "lastOddsChangeTime": 1791461441776,
+       "banned": false
+      },
+      {
+       "id": "66",
+       "specifier": "hcp=-1.5",
+       "product": 3,
+       "desc": "1st Half - Asian Handicap",
+       "status": 0,
+       "group": "Half",
+       "groupId": "171121154448MGI11275318",
+       "marketGuide": "Predict the winner in 1st Half taking into consideration the handicap in brackets. Quarter ball (0.25; 0.75; 1.25 etc.) advantage can be settled as won, lost or half won/half lost while the other half of the stake is returned. Half ball (0.5; 1.5; 2.5 etc.) advantage can be settled as won or lost. Whole ball (1; 2; 3 etc.) advantage can be settled as won, lost or void. For further information please refer to the How to Play\" section.\"",
+       "title": "",
+       "name": "1st Half - Handicap",
+       "favourite": 0,
+       "outcomes": [
+        {
+         "id": "1714",
+         "odds": "4.70",
+         "probability": "0.1931460000",
+         "voidProbability": "0E-10",
+         "isActive": 1,
+         "desc": "Home (-1.5)"
+        },
+        {
+         "id": "1715",
+         "odds": "1.21",
+         "probability": "0.8068540000",
+         "voidProbability": "0E-10",
+         "isActive": 1,
+         "desc": "Away (+1.5)"
+        }
+       ],
+       "farNearOdds": -1,
+       "sourceType": "BET_RADAR",
+       "lastOddsChangeTime": 1791461442000,
+       "banned": false
+      },
+      {
+       "id": "66",
+       "specifier": "hcp=-0.5",
+       "product": 3,
+       "desc": "1st Half - Asian Handicap",
+       "status": 0,
+       "group": "Half",
+       "groupId": "171121154448MGI11275318",
+       "marketGuide": "Predict the winner in 1st Half taking into consideration the handicap in brackets. Quarter ball (0.25; 0.75; 1.25 etc.) advantage can be settled as won, lost or half won/half lost while the other half of the stake is returned. Half ball (0.5; 1.5; 2.5 etc.) advantage can be settled as won or lost. Whole ball (1; 2; 3 etc.) advantage can be settled as won, lost or void. For further information please refer to the How to Play\" section.\"",
+       "title": "",
+       "name": "1st Half - Handicap",
+       "favourite": 1,
+       "outcomes": [
+        {
+         "id": "1714",
+         "odds": "1.91",
+         "probability": "0.5044230000",
+         "voidProbability": "0E-10",
+         "isActive": 1,
+         "desc": "Home (-0.5)"
+        },
+        {
+         "id": "1715",
+         "odds": "1.94",
+         "probability": "0.4955770000",
+         "voidProbability": "0E-10",
+         "isActive": 1,
+         "desc": "Away (+0.5)"
+        }
+       ],
+       "farNearOdds": 1,
+       "sourceType": "BET_RADAR",
+       "lastOddsChangeTime": 1791461442000,
+       "banned": false
+      },
+      {
+       "id": "66",
+       "specifier": "hcp=-1",
+       "product": 3,
+       "desc": "1st Half - Asian Handicap",
+       "status": 0,
+       "group": "Half",
+       "groupId": "171121154448MGI11275318",
+       "marketGuide": "Predict the winner in 1st Half taking into consideration the handicap in brackets. Quarter ball (0.25; 0.75; 1.25 etc.) advantage can be settled as won, lost or half won/half lost while the other half of the stake is returned. Half ball (0.5; 1.5; 2.5 etc.) advantage can be settled as won or lost. Whole ball (1; 2; 3 etc.) advantage can be settled as won, lost or void. For further information please refer to the How to Play\" section.\"",
+       "title": "",
+       "name": "1st Half - Handicap",
+       "favourite": 0,
+       "outcomes": [
+        {
+         "id": "1714",
+         "odds": "3.33",
+         "probability": "0.2805697763",
+         "voidProbability": "0E-10",
+         "isActive": 1,
+         "desc": "Home (-1.0)"
+        },
+        {
+         "id": "1715",
+         "odds": "1.35",
+         "probability": "0.7194303033",
+         "voidProbability": "0E-10",
+         "isActive": 1,
+         "desc": "Away (+1.0)"
+        }
+       ],
+       "farNearOdds": 0,
+       "sourceType": "BET_RADAR",
+       "lastOddsChangeTime": 1791461442000,
+       "banned": false
+      },
+      {
+       "id": "66",
+       "specifier": "hcp=0",
+       "product": 3,
+       "desc": "1st Half - Asian Handicap",
+       "status": 0,
+       "group": "Half",
+       "groupId": "171121154448MGI11275318",
+       "marketGuide": "Predict the winner in 1st Half taking into consideration the handicap in brackets. Quarter ball (0.25; 0.75; 1.25 etc.) advantage can be settled as won, lost or half won/half lost while the other half of the stake is returned. Half ball (0.5; 1.5; 2.5 etc.) advantage can be settled as won or lost. Whole ball (1; 2; 3 etc.) advantage can be settled as won, lost or void. For further information please refer to the How to Play\" section.\"",
+       "title": "",
+       "name": "1st Half - Handicap",
+       "favourite": 0,
+       "outcomes": [
+        {
+         "id": "1714",
+         "odds": "1.21",
+         "probability": "0.8046850000",
+         "voidProbability": "0E-10",
+         "isActive": 1,
+         "desc": "Home (0)"
+        },
+        {
+         "id": "1715",
+         "odds": "4.60",
+         "probability": "0.1953150000",
+         "voidProbability": "0E-10",
+         "isActive": 1,
+         "desc": "Away (0)"
+        }
+       ],
+       "farNearOdds": 0,
+       "sourceType": "BET_RADAR",
+       "lastOddsChangeTime": 1791461442000,
+       "banned": false
+      },
+      {
+       "id": "69",
+       "specifier": "total=0.5",
+       "product": 3,
+       "desc": "1st half - Arsenal Over/Under",
+       "status": 0,
+       "group": "Goals",
+       "groupId": "171121144758MGI11271357",
+       "marketGuide": "Predict whether the total number of goals scored by Home team in the 1st Half is over/under a given line.",
+       "title": "Goals,Over,Under",
+       "name": "1st Half - Home O/U",
+       "favourite": 1,
+       "outcomes": [
+        {
+         "id": "12",
+         "odds": "1.55",
+         "probability": "0.6115590000",
+         "voidProbability": "0E-10",
+         "isActive": 1,
+         "desc": "Over 0.5"
+        },
+        {
+         "id": "13",
+         "odds": "2.35",
+         "probability": "0.3884410000",
+         "voidProbability": "0E-10",
+         "isActive": 1,
+         "desc": "Under 0.5"
+        }
+       ],
+       "farNearOdds": 1,
+       "sourceType": "BET_RADAR",
+       "lastOddsChangeTime": 1791461442000,
+       "banned": false
+      },
+      {
+       "id": "69",
+       "specifier": "total=1.5",
+       "product": 3,
+       "desc": "1st half - Arsenal Over/Under",
+       "status": 0,
+       "group": "Goals",
+       "groupId": "171121144758MGI11271357",
+       "marketGuide": "Predict whether the total number of goals scored by Home team in the 1st Half is over/under a given line.",
+       "title": "Goals,Over,Under",
+       "name": "1st Half - Home O/U",
+       "favourite": 0,
+       "outcomes": [
+        {
+         "id": "12",
+         "odds": "3.60",
+         "probability": "0.2421340000",
+         "voidProbability": "0E-10",
+         "isActive": 1,
+         "desc": "Over 1.5"
+        },
+        {
+         "id": "13",
+         "odds": "1.26",
+         "probability": "0.7578660000",
+         "voidProbability": "0E-10",
+         "isActive": 1,
+         "desc": "Under 1.5"
+        }
+       ],
+       "farNearOdds": 0,
+       "sourceType": "BET_RADAR",
+       "lastOddsChangeTime": 1791461442000,
+       "banned": false
+      },
+      {
+       "id": "69",
+       "specifier": "total=2.5",
+       "product": 3,
+       "desc": "1st half - Arsenal Over/Under",
+       "status": 0,
+       "group": "Goals",
+       "groupId": "171121144758MGI11271357",
+       "marketGuide": "Predict whether the total number of goals scored by Home team in the 1st Half is over/under a given line.",
+       "title": "Goals,Over,Under",
+       "name": "1st Half - Home O/U",
+       "favourite": 0,
+       "outcomes": [
+        {
+         "id": "12",
+         "odds": "8.90",
+         "probability": "0.0692705000",
+         "voidProbability": "0E-10",
+         "isActive": 1,
+         "desc": "Over 2.5"
+        },
+        {
+         "id": "13",
+         "odds": "1.04",
+         "probability": "0.9307300000",
+         "voidProbability": "0E-10",
+         "isActive": 1,
+         "desc": "Under 2.5"
+        }
+       ],
+       "farNearOdds": -1,
+       "sourceType": "BET_RADAR",
+       "lastOddsChangeTime": 1791461442000,
+       "banned": false
+      },
+      {
+       "id": "70",
+       "specifier": "total=0.5",
+       "product": 3,
+       "desc": "1st half - Leeds United Over/Under",
+       "status": 0,
+       "group": "Goals",
+       "groupId": "171121144758MGI11271357",
+       "marketGuide": "Predict whether the total number of goals scored by Away team in the 1st Half is over/under a given line.",
+       "title": "Goals,Over,Under",
+       "name": "1st Half - Away O/U",
+       "favourite": 1,
+       "outcomes": [
+        {
+         "id": "12",
+         "odds": "3.25",
+         "probability": "0.2720638867",
+         "voidProbability": "0E-10",
+         "isActive": 1,
+         "desc": "Over 0.5"
+        },
+        {
+         "id": "13",
+         "odds": "1.31",
+         "probability": "0.7279362306",
+         "voidProbability": "0E-10",
+         "isActive": 1,
+         "desc": "Under 0.5"
+        }
+       ],
+       "farNearOdds": 1,
+       "sourceType": "BET_RADAR",
+       "lastOddsChangeTime": 1791461442000,
+       "banned": false
+      },
+      {
+       "id": "70",
+       "specifier": "total=1.5",
+       "product": 3,
+       "desc": "1st half - Leeds United Over/Under",
+       "status": 0,
+       "group": "Goals",
+       "groupId": "171121144758MGI11271357",
+       "marketGuide": "Predict whether the total number of goals scored by Away team in the 1st Half is over/under a given line.",
+       "title": "Goals,Over,Under",
+       "name": "1st Half - Away O/U",
+       "favourite": 0,
+       "outcomes": [
+        {
+         "id": "12",
+         "odds": "11.50",
+         "probability": "0.0408820294",
+         "voidProbability": "0E-10",
+         "isActive": 1,
+         "desc": "Over 1.5"
+        },
+        {
+         "id": "13",
+         "odds": "1.02",
+         "probability": "0.9591229320",
+         "voidProbability": "0E-10",
+         "isActive": 1,
+         "desc": "Under 1.5"
+        }
+       ],
+       "farNearOdds": -1,
+       "sourceType": "BET_RADAR",
+       "lastOddsChangeTime": 1791461442000,
+       "banned": false
+      },
+      {
+       "id": "75",
+       "product": 3,
+       "desc": "1st Half - GG/NG",
+       "status": 0,
+       "group": "Goals",
+       "groupId": "171121144758MGI11271357",
+       "marketGuide": "Will both teams score at least one goal each in the 1st Half.",
+       "title": "",
+       "name": "1st Half - GG/NG",
+       "favourite": 0,
+       "outcomes": [
+        {
+         "id": "74",
+         "odds": "5.20",
+         "probability": "0.1656182828",
+         "voidProbability": "0E-10",
+         "isActive": 1,
+         "desc": "Yes"
+        },
+        {
+         "id": "76",
+         "odds": "1.17",
+         "probability": "0.8343817181",
+         "voidProbability": "0E-10",
+         "isActive": 1,
+         "desc": "No"
+        }
+       ],
+       "farNearOdds": 0,
+       "sourceType": "BET_RADAR",
+       "lastOddsChangeTime": 1791461442000,
+       "banned": false
+      },
+      {
+       "id": "83",
+       "product": 3,
+       "desc": "2nd Half - 1X2",
+       "status": 0,
+       "group": "Half",
+       "groupId": "171121154448MGI11275318",
+       "marketGuide": "Which team will win the 2nd Half.",
+       "title": "",
+       "name": "2nd Half - 1X2",
+       "favourite": 0,
+       "outcomes": [
+        {
+         "id": "1",
+         "odds": "1.78",
+         "probability": "0.5407080000",
+         "voidProbability": "0E-10",
+         "isActive": 1,
+         "desc": "Home"
+        },
+        {
+         "id": "2",
+         "odds": "2.95",
+         "probability": "0.3214280000",
+         "voidProbability": "0E-10",
+         "isActive": 1,
+         "desc": "Draw"
+        },
+        {
+         "id": "3",
+         "odds": "6.75",
+         "probability": "0.1378640000",
+         "voidProbability": "0E-10",
+         "isActive": 1,
+         "desc": "Away"
+        }
+       ],
+       "farNearOdds": 0,
+       "sourceType": "BET_RADAR",
+       "lastOddsChangeTime": 1791461442000,
+       "banned": false
+      },
+      {
+       "id": "90",
+       "specifier": "total=1",
+       "product": 3,
+       "desc": "2nd Half - Over/Under",
+       "status": 0,
+       "group": "Half",
+       "groupId": "171121154448MGI11275318",
+       "marketGuide": "Predict whether the total number of goals scored in the 2nd Half is over/under a given line.",
+       "title": "",
+       "name": "2nd Half - Total",
+       "favourite": 0,
+       "outcomes": [
+        {
+         "id": "12",
+         "odds": "1.44",
+         "probability": "0.6745490000",
+         "voidProbability": "0E-10",
+         "isActive": 1,
+         "desc": "Over 1"
+        },
+        {
+         "id": "13",
+         "odds": "2.90",
+         "probability": "0.3254510000",
+         "voidProbability": "0E-10",
+         "isActive": 1,
+         "desc": "Under 1"
+        }
+       ],
+       "farNearOdds": 0,
+       "sourceType": "BET_RADAR",
+       "lastOddsChangeTime": 1791461442000,
+       "banned": false
+      },
+      {
+       "id": "90",
+       "specifier": "total=2",
+       "product": 3,
+       "desc": "2nd Half - Over/Under",
+       "status": 0,
+       "group": "Half",
+       "groupId": "171121154448MGI11275318",
+       "marketGuide": "Predict whether the total number of goals scored in the 2nd Half is over/under a given line.",
+       "title": "",
+       "name": "2nd Half - Total",
+       "favourite": 0,
+       "outcomes": [
+        {
+         "id": "12",
+         "odds": "3.50",
+         "probability": "0.2627581636",
+         "voidProbability": "0E-10",
+         "isActive": 1,
+         "desc": "Over 2"
+        },
+        {
+         "id": "13",
+         "odds": "1.32",
+         "probability": "0.7372420171",
+         "voidProbability": "0E-10",
+         "isActive": 1,
+         "desc": "Under 2"
+        }
+       ],
+       "farNearOdds": 0,
+       "sourceType": "BET_RADAR",
+       "lastOddsChangeTime": 1791461442000,
+       "banned": false
+      },
+      {
+       "id": "90",
+       "specifier": "total=3",
+       "product": 3,
+       "desc": "2nd Half - Over/Under",
+       "status": 0,
+       "group": "Half",
+       "groupId": "171121154448MGI11275318",
+       "marketGuide": "Predict whether the total number of goals scored in the 2nd Half is over/under a given line.",
+       "title": "",
+       "name": "2nd Half - Total",
+       "favourite": 0,
+       "outcomes": [
+        {
+         "id": "12",
+         "odds": "10.00",
+         "probability": "0.0777205771",
+         "voidProbability": "0E-10",
+         "isActive": 1,
+         "desc": "Over 3"
+        },
+        {
+         "id": "13",
+         "odds": "1.06",
+         "probability": "0.9222794238",
+         "voidProbability": "0E-10",
+         "isActive": 1,
+         "desc": "Under 3"
+        }
+       ],
+       "farNearOdds": -1,
+       "sourceType": "BET_RADAR",
+       "lastOddsChangeTime": 1791461442000,
+       "banned": false
+      },
+      {
+       "id": "90",
+       "specifier": "total=0.5",
+       "product": 3,
+       "desc": "2nd Half - Over/Under",
+       "status": 0,
+       "group": "Half",
+       "groupId": "171121154448MGI11275318",
+       "marketGuide": "Predict whether the total number of goals scored in the 2nd Half is over/under a given line.",
+       "title": "",
+       "name": "2nd Half - Total",
+       "favourite": 0,
+       "outcomes": [
+        {
+         "id": "12",
+         "odds": "1.25",
+         "probability": "0.7831103216",
+         "voidProbability": "0E-10",
+         "isActive": 1,
+         "desc": "Over 0.5"
+        },
+        {
+         "id": "13",
+         "odds": "4.20",
+         "probability": "0.2168913498",
+         "voidProbability": "0E-10",
+         "isActive": 1,
+         "desc": "Under 0.5"
+        }
+       ],
+       "farNearOdds": 0,
+       "sourceType": "BET_RADAR",
+       "lastOddsChangeTime": 1791461442000,
+       "banned": false
+      },
+      {
+       "id": "90",
+       "specifier": "total=1.5",
+       "product": 3,
+       "desc": "2nd Half - Over/Under",
+       "status": 0,
+       "group": "Half",
+       "groupId": "171121154448MGI11275318",
+       "marketGuide": "Predict whether the total number of goals scored in the 2nd Half is over/under a given line.",
+       "title": "",
+       "name": "2nd Half - Total",
+       "favourite": 1,
+       "outcomes": [
+        {
+         "id": "12",
+         "odds": "2.15",
+         "probability": "0.4498590000",
+         "voidProbability": "0E-10",
+         "isActive": 1,
+         "desc": "Over 1.5"
+        },
+        {
+         "id": "13",
+         "odds": "1.75",
+         "probability": "0.5501410000",
+         "voidProbability": "0E-10",
+         "isActive": 1,
+         "desc": "Under 1.5"
+        }
+       ],
+       "farNearOdds": 1,
+       "sourceType": "BET_RADAR",
+       "lastOddsChangeTime": 1791461442000,
+       "banned": false
+      },
+      {
+       "id": "90",
+       "specifier": "total=2.5",
+       "product": 3,
+       "desc": "2nd Half - Over/Under",
+       "status": 0,
+       "group": "Half",
+       "groupId": "171121154448MGI11275318",
+       "marketGuide": "Predict whether the total number of goals scored in the 2nd Half is over/under a given line.",
+       "title": "",
+       "name": "2nd Half - Total",
+       "favourite": 0,
+       "outcomes": [
+        {
+         "id": "12",
+         "odds": "4.60",
+         "probability": "0.1960622935",
+         "voidProbability": "0E-10",
+         "isActive": 1,
+         "desc": "Over 2.5"
+        },
+        {
+         "id": "13",
+         "odds": "1.21",
+         "probability": "0.8039424979",
+         "voidProbability": "0E-10",
+         "isActive": 1,
+         "desc": "Under 2.5"
+        }
+       ],
+       "farNearOdds": 0,
+       "sourceType": "BET_RADAR",
+       "lastOddsChangeTime": 1791461442000,
+       "banned": false
+      },
+      {
+       "id": "85",
+       "product": 3,
+       "desc": "2nd Half - Double Chance",
+       "status": 0,
+       "group": "Half",
+       "groupId": "171121154448MGI11275318",
+       "marketGuide": "Predict the result of the 2nd Half combining two of the three possible outcomes (1X, X2 or 12).",
+       "title": "",
+       "name": "2nd Half - Double Chance",
+       "favourite": 0,
+       "outcomes": [
+        {
+         "id": "9",
+         "odds": "1.13",
+         "probability": "0.8623309298",
+         "voidProbability": "0E-10",
+         "isActive": 1,
+         "desc": "Home or Draw"
+        },
+        {
+         "id": "10",
+         "odds": "1.39",
+         "probability": "0.6783444921",
+         "voidProbability": "0E-10",
+         "isActive": 1,
+         "desc": "Home or Away"
+        },
+        {
+         "id": "11",
+         "odds": "1.97",
+         "probability": "0.4593259397",
+         "voidProbability": "0E-10",
+         "isActive": 1,
+         "desc": "Draw or Away"
+        }
+       ],
+       "farNearOdds": 0,
+       "sourceType": "BET_RADAR",
+       "lastOddsChangeTime": 1791461442000,
+       "banned": false
+      },
+      {
+       "id": "88",
+       "specifier": "hcp=-1.5",
+       "product": 3,
+       "desc": "2nd Half - Asian Handicap",
+       "status": 0,
+       "group": "Half",
+       "groupId": "171121154448MGI11275318",
+       "marketGuide": "Predict the winner in 2nd Half taking in consideration the handicap in brackets. Quarter ball (0.25; 0.75; 1.25 etc.) advantage can be settled as won, lost or half won/half lost while the other half of the stake is returned. Half ball (0.5; 1.5; 2.5 etc.) advantage can be settled as won or lost. Whole ball (1; 2; 3 etc.) advantage can be settled as won, lost or void. For further information please refer to the How to Play\" section.\"",
+       "title": "",
+       "name": "2nd Half - Handicap",
+       "favourite": 0,
+       "outcomes": [
+        {
+         "id": "1714",
+         "odds": "3.80",
+         "probability": "0.2423062380",
+         "voidProbability": "0E-10",
+         "isActive": 1,
+         "desc": "Home (-1.5)"
+        },
+        {
+         "id": "1715",
+         "odds": "1.29",
+         "probability": "0.7576942403",
+         "voidProbability": "0E-10",
+         "isActive": 1,
+         "desc": "Away (+1.5)"
+        }
+       ],
+       "farNearOdds": 0,
+       "sourceType": "BET_RADAR",
+       "lastOddsChangeTime": 1791461442000,
+       "banned": false
+      },
+      {
+       "id": "88",
+       "specifier": "hcp=-0.5",
+       "product": 3,
+       "desc": "2nd Half - Asian Handicap",
+       "status": 0,
+       "group": "Half",
+       "groupId": "171121154448MGI11275318",
+       "marketGuide": "Predict the winner in 2nd Half taking in consideration the handicap in brackets. Quarter ball (0.25; 0.75; 1.25 etc.) advantage can be settled as won, lost or half won/half lost while the other half of the stake is returned. Half ball (0.5; 1.5; 2.5 etc.) advantage can be settled as won or lost. Whole ball (1; 2; 3 etc.) advantage can be settled as won, lost or void. For further information please refer to the How to Play\" section.\"",
+       "title": "",
+       "name": "2nd Half - Handicap",
+       "favourite": 1,
+       "outcomes": [
+        {
+         "id": "1714",
+         "odds": "1.78",
+         "probability": "0.5407080000",
+         "voidProbability": "0E-10",
+         "isActive": 1,
+         "desc": "Home (-0.5)"
+        },
+        {
+         "id": "1715",
+         "odds": "2.10",
+         "probability": "0.4592920000",
+         "voidProbability": "0E-10",
+         "isActive": 1,
+         "desc": "Away (+0.5)"
+        }
+       ],
+       "farNearOdds": 1,
+       "sourceType": "BET_RADAR",
+       "lastOddsChangeTime": 1791461442000,
+       "banned": false
+      },
+      {
+       "id": "88",
+       "specifier": "hcp=-1",
+       "product": 3,
+       "desc": "2nd Half - Asian Handicap",
+       "status": 0,
+       "group": "Half",
+       "groupId": "171121154448MGI11275318",
+       "marketGuide": "Predict the winner in 2nd Half taking in consideration the handicap in brackets. Quarter ball (0.25; 0.75; 1.25 etc.) advantage can be settled as won, lost or half won/half lost while the other half of the stake is returned. Half ball (0.5; 1.5; 2.5 etc.) advantage can be settled as won or lost. Whole ball (1; 2; 3 etc.) advantage can be settled as won, lost or void. For further information please refer to the How to Play\" section.\"",
+       "title": "",
+       "name": "2nd Half - Handicap",
+       "favourite": 0,
+       "outcomes": [
+        {
+         "id": "1714",
+         "odds": "2.75",
+         "probability": "0.3454720000",
+         "voidProbability": "0E-10",
+         "isActive": 1,
+         "desc": "Home (-1.0)"
+        },
+        {
+         "id": "1715",
+         "odds": "1.48",
+         "probability": "0.6545280000",
+         "voidProbability": "0E-10",
+         "isActive": 1,
+         "desc": "Away (+1.0)"
+        }
+       ],
+       "farNearOdds": 0,
+       "sourceType": "BET_RADAR",
+       "lastOddsChangeTime": 1791461442000,
+       "banned": false
+      },
+      {
+       "id": "88",
+       "specifier": "hcp=0",
+       "product": 3,
+       "desc": "2nd Half - Asian Handicap",
+       "status": 0,
+       "group": "Half",
+       "groupId": "171121154448MGI11275318",
+       "marketGuide": "Predict the winner in 2nd Half taking in consideration the handicap in brackets. Quarter ball (0.25; 0.75; 1.25 etc.) advantage can be settled as won, lost or half won/half lost while the other half of the stake is returned. Half ball (0.5; 1.5; 2.5 etc.) advantage can be settled as won or lost. Whole ball (1; 2; 3 etc.) advantage can be settled as won, lost or void. For further information please refer to the How to Play\" section.\"",
+       "title": "",
+       "name": "2nd Half - Handicap",
+       "favourite": 0,
+       "outcomes": [
+        {
+         "id": "1714",
+         "odds": "1.23",
+         "probability": "0.7968330000",
+         "voidProbability": "0E-10",
+         "isActive": 1,
+         "desc": "Home (0)"
+        },
+        {
+         "id": "1715",
+         "odds": "4.50",
+         "probability": "0.2031670000",
+         "voidProbability": "0E-10",
+         "isActive": 1,
+         "desc": "Away (0)"
+        }
+       ],
+       "farNearOdds": -1,
+       "sourceType": "BET_RADAR",
+       "lastOddsChangeTime": 1791461442000,
+       "banned": false
+      },
+      {
+       "id": "91",
+       "specifier": "total=0.5",
+       "product": 3,
+       "desc": "2nd Half - Arsenal Over/Under",
+       "status": 0,
+       "group": "Goals",
+       "groupId": "171121144758MGI11271357",
+       "marketGuide": "Predict whether the total number of goals scored by Home team in the 2nd Half is over/under a given line.",
+       "title": "",
+       "name": "2nd Half - Home Team Total",
+       "favourite": 1,
+       "outcomes": [
+        {
+         "id": "12",
+         "odds": "1.42",
+         "probability": "0.6691080000",
+         "voidProbability": "0E-10",
+         "isActive": 1,
+         "desc": "Over 0.5"
+        },
+        {
+         "id": "13",
+         "odds": "2.75",
+         "probability": "0.3308920000",
+         "voidProbability": "0E-10",
+         "isActive": 1,
+         "desc": "Under 0.5"
+        }
+       ],
+       "farNearOdds": 1,
+       "sourceType": "BET_RADAR",
+       "lastOddsChangeTime": 1791461442000,
+       "banned": false
+      },
+      {
+       "id": "91",
+       "specifier": "total=1.5",
+       "product": 3,
+       "desc": "2nd Half - Arsenal Over/Under",
+       "status": 0,
+       "group": "Goals",
+       "groupId": "171121144758MGI11271357",
+       "marketGuide": "Predict whether the total number of goals scored by Home team in the 2nd Half is over/under a given line.",
+       "title": "",
+       "name": "2nd Half - Home Team Total",
+       "favourite": 0,
+       "outcomes": [
+        {
+         "id": "12",
+         "odds": "2.90",
+         "probability": "0.3106881421",
+         "voidProbability": "0E-10",
+         "isActive": 1,
+         "desc": "Over 1.5"
+        },
+        {
+         "id": "13",
+         "odds": "1.38",
+         "probability": "0.6893118793",
+         "voidProbability": "0E-10",
+         "isActive": 1,
+         "desc": "Under 1.5"
+        }
+       ],
+       "farNearOdds": 0,
+       "sourceType": "BET_RADAR",
+       "lastOddsChangeTime": 1791461442000,
+       "banned": false
+      },
+      {
+       "id": "91",
+       "specifier": "total=2.5",
+       "product": 3,
+       "desc": "2nd Half - Arsenal Over/Under",
+       "status": 0,
+       "group": "Goals",
+       "groupId": "171121144758MGI11271357",
+       "marketGuide": "Predict whether the total number of goals scored by Home team in the 2nd Half is over/under a given line.",
+       "title": "",
+       "name": "2nd Half - Home Team Total",
+       "favourite": 0,
+       "outcomes": [
+        {
+         "id": "12",
+         "odds": "6.80",
+         "probability": "0.1067023482",
+         "voidProbability": "0E-10",
+         "isActive": 1,
+         "desc": "Over 2.5"
+        },
+        {
+         "id": "13",
+         "odds": "1.08",
+         "probability": "0.8932983106",
+         "voidProbability": "0E-10",
+         "isActive": 1,
+         "desc": "Under 2.5"
+        }
+       ],
+       "farNearOdds": -1,
+       "sourceType": "BET_RADAR",
+       "lastOddsChangeTime": 1791461442000,
+       "banned": false
+      },
+      {
+       "id": "92",
+       "specifier": "total=0.5",
+       "product": 3,
+       "desc": "2nd Half - Leeds United Over/Under",
+       "status": 0,
+       "group": "Goals",
+       "groupId": "171121144758MGI11271357",
+       "marketGuide": "Predict whether the total number of goals scored by Away team in the 2nd Half is over/under a given line.",
+       "title": "",
+       "name": "2nd Half - Away Team Total",
+       "favourite": 1,
+       "outcomes": [
+        {
+         "id": "12",
+         "odds": "2.75",
+         "probability": "0.3266150000",
+         "voidProbability": "0E-10",
+         "isActive": 1,
+         "desc": "Over 0.5"
+        },
+        {
+         "id": "13",
+         "odds": "1.41",
+         "probability": "0.6733850000",
+         "voidProbability": "0E-10",
+         "isActive": 1,
+         "desc": "Under 0.5"
+        }
+       ],
+       "farNearOdds": 1,
+       "sourceType": "BET_RADAR",
+       "lastOddsChangeTime": 1791461442000,
+       "banned": false
+      },
+      {
+       "id": "92",
+       "specifier": "total=1.5",
+       "product": 3,
+       "desc": "2nd Half - Leeds United Over/Under",
+       "status": 0,
+       "group": "Goals",
+       "groupId": "171121144758MGI11271357",
+       "marketGuide": "Predict whether the total number of goals scored by Away team in the 2nd Half is over/under a given line.",
+       "title": "",
+       "name": "2nd Half - Away Team Total",
+       "favourite": 0,
+       "outcomes": [
+        {
+         "id": "12",
+         "odds": "9.40",
+         "probability": "0.0627960510",
+         "voidProbability": "0E-10",
+         "isActive": 1,
+         "desc": "Over 1.5"
+        },
+        {
+         "id": "13",
+         "odds": "1.04",
+         "probability": "0.9372039806",
+         "voidProbability": "0E-10",
+         "isActive": 1,
+         "desc": "Under 1.5"
+        }
+       ],
+       "farNearOdds": -1,
+       "sourceType": "BET_RADAR",
+       "lastOddsChangeTime": 1791461442000,
+       "banned": false
+      },
+      {
+       "id": "95",
+       "product": 3,
+       "desc": "2nd Half - GG/NG",
+       "status": 0,
+       "group": "Goals",
+       "groupId": "171121144758MGI11271357",
+       "marketGuide": "Will both teams score at least one goal each in the 2nd Half.",
+       "title": "",
+       "name": "2nd Half - GG/NG",
+       "favourite": 0,
+       "outcomes": [
+        {
+         "id": "74",
+         "odds": "4.20",
+         "probability": "0.2127680000",
+         "voidProbability": "0E-10",
+         "isActive": 1,
+         "desc": "Yes"
+        },
+        {
+         "id": "76",
+         "odds": "1.23",
+         "probability": "0.7872320000",
+         "voidProbability": "0E-10",
+         "isActive": 1,
+         "desc": "No"
+        }
+       ],
+       "farNearOdds": 0,
+       "sourceType": "BET_RADAR",
+       "lastOddsChangeTime": 1791461441776,
+       "banned": false
+      }
+     ]
+    }
+   ]
+  }
+ ]
+}

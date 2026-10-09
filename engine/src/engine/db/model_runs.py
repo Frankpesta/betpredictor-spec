@@ -8,10 +8,16 @@ from datetime import UTC, datetime
 
 from sqlalchemy.orm import Session
 
-from engine.config import Settings
+from engine.config import LEAGUES, Settings
 from engine.db.models import League, ModelRun
-from engine.db.queries import current_season_teams, load_finished_matches, team_names
-from engine.model.league import FitSettings, LeagueModel, fit_league
+from engine.db.queries import (
+    current_season_teams,
+    load_finished_matches,
+    load_half_time_goals,
+    team_names,
+)
+from engine.model.half_time import HalfTimeParams, fit_for_model
+from engine.model.league import FitSettings, LeagueMatches, LeagueModel, fit_league
 
 
 def fit_settings(settings: Settings, xi_per_day: float | None = None) -> FitSettings:
@@ -25,10 +31,17 @@ def fit_settings(settings: Settings, xi_per_day: float | None = None) -> FitSett
     )
 
 
-def params_json(model: LeagueModel, settings: Settings, names: dict[int, str]) -> str:
+def params_json(
+    model: LeagueModel,
+    settings: Settings,
+    names: dict[int, str],
+    half_time: HalfTimeParams | None = None,
+) -> str:
     g = model.goals
     return json.dumps(
         {
+            # docs/10 §2: None for INTL or when too few matches have half-time goals
+            "half_time": None if half_time is None else half_time.to_json(),
             "goals": g.params.to_json_dict(),
             "xg": None if model.xg is None else model.xg.params.to_json_dict(),
             "xi_per_day": settings.model.xi_per_day,
@@ -57,13 +70,14 @@ def fit_and_store(
     matches = load_finished_matches(session, league.id)
     model = fit_league(matches, fit_time.timestamp(), fit_settings(settings))
     names = team_names(session)
+    half_time = fit_half_time_params(session, league, matches, model, settings, fit_time)
     run = ModelRun(
         league_id=league.id,
         model_version=settings.model.version,
         fitted_at=fit_time,
         train_from=datetime.fromtimestamp(model.window_start, UTC).date(),
         train_to=fit_time.date(),
-        params_json=params_json(model, settings, names),
+        params_json=params_json(model, settings, names, half_time),
         converged=model.goals.converged and (model.xg is None or model.xg.converged),
         neg_log_lik=model.goals.neg_log_lik,
         n_matches=model.goals.n_matches,
@@ -71,6 +85,31 @@ def fit_and_store(
     session.add(run)
     session.flush()
     return StoredFit(run, model)
+
+
+def fit_half_time_params(
+    session: Session,
+    league: League,
+    matches: LeagueMatches,
+    model: LeagueModel,
+    settings: Settings,
+    fit_time: datetime,
+) -> HalfTimeParams | None:
+    """docs/10 §2: club leagues only (INTL results carry no half-time scores)."""
+    if LEAGUES[league.key].international:
+        return None
+    hth, hta = load_half_time_goals(session, league.id, matches.match_id)
+    return fit_for_model(
+        model,
+        matches,
+        hth,
+        hta,
+        fit_time.timestamp(),
+        settings.model.train_seasons_back,
+        settings.model.rho_bounds,
+        settings.model.xg_blend_weight,
+        settings.half_time.min_matches,
+    )
 
 
 def format_fit_summary(

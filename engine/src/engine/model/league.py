@@ -181,17 +181,20 @@ class StoredModel:
     goals: DCParams
     xg: DCParams | None
     low_confidence: frozenset[int]
+    half_time: dict[str, float | int] | None = None  # docs/10 §2 (HalfTimeParams JSON)
 
     @classmethod
     def from_json(cls, params: dict[str, object]) -> StoredModel:
         goals = params["goals"]
         xg = params.get("xg")
         low = params.get("low_confidence") or []
+        ht = params.get("half_time")
         assert isinstance(goals, dict) and isinstance(low, list)
         return cls(
             goals=params_from_json(goals),
             xg=params_from_json(xg) if isinstance(xg, dict) else None,
             low_confidence=frozenset(int(t) for t in low),
+            half_time=ht if isinstance(ht, dict) else None,
         )
 
     def has_team(self, team: int) -> bool:

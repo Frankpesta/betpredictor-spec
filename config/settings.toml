@@ -35,13 +35,54 @@ min_team_matches = 8            # below this, team is flagged low-confidence
 #                 favourite's side; sanity flags still exclude. min_edge_leg, min_odds,
 #                 max_odds and the slip edge floors below apply to "value" only.
 #   "value"     = the original docs/05 §2.2 rules.
-selection = "likeliest"
+#   "data_rule" = every leg needs a team-data reason (docs/05 §9, user decision 2026-10-08):
+#                 scoring chance + recent blanks, odds floor, see [value.data_rule].
+selection = "data_rule"
 market_shrink_weight = 0.3      # p_final = w*p_model + (1-w)*p_market_devig ; tuned by backtest (2026-09-27, run #3)
 min_edge_leg = 0.03
 max_model_market_gap = 0.15     # abs(p_final - p_market_devig) above this => flagged
 min_odds = 1.20
 max_odds = 2.60
 allowed_lines = "half_only"     # v1: only x.5 lines enter slips
+# Markets priced by `make picks` (docs/05 §10, user request 2026-10-08). OU_HOME / OU_AWAY =
+# one team's goals; 1X2, DC (double chance), BTTS (GG/NG). The new ones are UNVALIDATED:
+# no historical odds to backtest them (football-data has 1X2 only) — judged on paper.
+markets = [
+  "AH", "OU", "OU_HOME", "OU_AWAY", "1X2", "DC", "BTTS",
+  # docs/10 half-time markets that passed the calibration gate (backtest 2026-10-08; clubs only).
+  # BTTS_2H failed and stays out. UNVALIDATED: no half-time odds history, judged on paper.
+  "OU_1H", "OU_2H", "AH_1H", "AH_2H", "1X2_1H", "1X2_2H", "DC_1H", "DC_2H", "BTTS_1H",
+  "OU_HOME_1H", "OU_AWAY_1H", "OU_HOME_2H", "OU_AWAY_2H",
+]
+
+[value.data_rule]
+# docs/05 §9. P(score) = model chance the team scores (score matrix); blanks = games it
+# failed to score in its last `form_games` finished matches (all competitions in the DB).
+form_games = 10
+min_form_games = 5          # fewer finished games than this -> no "strong" verdict
+strong_score_p = 0.90       # team to win (AH minus line): P(score) >= this ...
+strong_max_blanks = 2       # ... and blanked <= this
+weak_score_p = 0.60         # weak attack: P(score) <= this ...
+weak_min_blanks = 4         # ... and blanked >= this -> back against it (AH plus line / Under)
+over_score_p = 0.70         # Over: both teams P(score) >= this ...
+over_max_blanks = 2         # ... and both blanked <= this
+min_leg_probability = 0.50
+min_odds = 1.20             # no 1.02 "certainties": they cannot pay for the risk they add
+
+[value.data_rule_half]
+# docs/10 §5: the same rule on one half — P(score) = model chance the team scores in that
+# half; blanks = games it did not score in that half (last `form_games` with half-time data).
+# Halves have ~45/55% of the goals, so the thresholds are lower than full time.
+form_games = 10
+min_form_games = 5
+strong_score_p = 0.65       # team to win the half / score in it: P(score in half) >= this ...
+strong_max_blanks = 4       # ... and failed to score in that half in <= 4 of the last 10
+weak_score_p = 0.35         # weak attack in the half: P <= this ...
+weak_min_blanks = 7         # ... and blanked in that half >= 7 of 10
+over_score_p = 0.55         # half Over / GG: both teams P(score in half) >= this ...
+over_max_blanks = 5         # ... and both blanked in that half <= 5 of 10
+min_leg_probability = 0.50
+min_odds = 1.20
 
 [slips.daily_2odds]
 enabled = true
@@ -67,6 +108,10 @@ min_leg_probability = 0.65
 min_leg_edge = 0.00
 weekend_start = "Fri 18:00"     # Lagos time
 weekend_end = "Mon 02:00"
+
+[half_time]
+# docs/10: split full-time model (user decision 2026-10-08). Club leagues only.
+min_matches = 200           # matches with half-time goals in the training window, else no HT model
 
 [backtest]
 test_seasons = ["2023-24","2024-25","2025-26"]

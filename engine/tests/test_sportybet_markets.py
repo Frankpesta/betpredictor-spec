@@ -22,6 +22,8 @@ def _load(name: str) -> dict[str, Any]:
 
 EVENT = _load("event_arsenal_leeds.json")  # factsCenter/event, many market types
 PC = _load("pcEvents_epl_with_ah.json")  # factsCenter/pcEvents with marketId 1,18,16
+# docs/discovered/sportybet/2026-10-08: pcEvents with 1,10,19,20,29 (trimmed to one event)
+NEW = _load("pcEvents_epl_new_markets.json")
 
 
 def _odds(parsed: mk.ParsedEvents) -> dict[tuple[str, float, str], mk.SbOdds]:
@@ -57,8 +59,9 @@ def test_f6_over_under_market_18_full_time() -> None:
     over, under = odds[("OU", 2.5, "over")], odds[("OU", 2.5, "under")]
     assert (over.odds, under.odds) == (1.68, 2.15)
     assert (over.sb_market_id, over.sb_specifier) == ("18", "total=2.5")
-    # team-total market 19 has an "Over 2.5" at 2.65 — it must not leak in
-    assert all(o.sb_market_id in ("16", "18") for o in odds.values())
+    # team-total market 19 has an "Over 2.5" at 2.65 — it must not leak into match goals
+    assert all(o.sb_market_id == "18" for o in odds.values() if o.market == "OU")
+    assert odds[("OU_HOME", 2.5, "over")].sb_market_id == "19"
     assert ("OU", 2.0, "over") in odds  # whole lines are parsed (flagged later, docs/05)
 
 
@@ -129,6 +132,8 @@ def test_bounds_and_overround_filters() -> None:
     assert ("OU", 3.5, "over") not in odds and parsed.skipped["bad_overround"] == 2
     assert ("OU", 1.0, "over") not in odds and parsed.skipped["odds_too_low"] == 1
     for (market, line, _), _o in odds.items():
+        if market not in ("AH", "OU"):
+            continue
         lo, hi = mk.AH_LINE_RANGE if market == "AH" else mk.OU_LINE_RANGE
         assert lo <= line <= hi
         pair = [odds.get((market, line, s)) for s in mk.PAIRS[market]]
@@ -142,7 +147,9 @@ def test_out_of_range_lines_discarded() -> None:
     m["specifier"] = "total=6.5"
     parsed = mk.parse_event_detail(p)
     assert ("OU", 6.5, "over") not in _odds(parsed)
-    assert parsed.skipped["line_out_of_range"] == 2
+    # the sample's own 1st-half AH lines beyond ±0.5 are out of range too (docs/10 §4)
+    before = mk.parse_event_detail(EVENT).skipped["line_out_of_range"]
+    assert parsed.skipped["line_out_of_range"] == before + 2
 
 
 def test_reused_market_id_with_other_name_is_refused() -> None:
@@ -174,3 +181,86 @@ def test_f11_share_code() -> None:
     assert mk.share_code(share["response"]) == "X6YP10"
     sel = share["request"]["selections"][0]
     assert set(sel) == {"eventId", "marketId", "specifier", "outcomeId"}
+
+
+def test_new_markets_2026_10_08() -> None:
+    """docs/discovered/sportybet/2026-10-08/new-markets.md: ids, outcomes, no specifier."""
+    odds = _odds(mk.parse_pc_events(NEW))
+    assert odds[("1X2", 0.0, "home")].odds == 1.44
+    assert odds[("1X2", 0.0, "draw")].sb_outcome_id == "2"
+    assert odds[("1X2", 0.0, "away")].odds == 7.81
+    assert odds[("DC", 0.0, "home_draw")].sb_outcome_id == "9"
+    assert odds[("DC", 0.0, "home_away")].sb_outcome_id == "10"
+    assert odds[("DC", 0.0, "draw_away")].odds == 2.70
+    assert (odds[("BTTS", 0.0, "yes")].odds, odds[("BTTS", 0.0, "no")].odds) == (2.10, 1.74)
+    assert odds[("BTTS", 0.0, "yes")].sb_specifier == ""  # lineless: booked without specifier
+    home = odds[("OU_HOME", 1.5, "over")]
+    assert (home.odds, home.sb_market_id, home.sb_specifier) == (1.58, "19", "total=1.5")
+    away = odds[("OU_AWAY", 0.5, "under")]
+    assert (away.odds, away.sb_market_id, away.sb_outcome_id) == (1.97, "20", "13")
+    # Leeds over 2.5 @14.00 / under @1.02: 1/14 + 1/1.02 = 1.052 -> kept
+    assert ("OU_AWAY", 2.5, "under") in odds
+
+
+def test_team_goals_desc_must_name_the_team() -> None:
+    p = copy.deepcopy(NEW)
+    ev = p["data"][0]["events"][0]
+    for m in ev["markets"]:
+        if m["id"] == "19":
+            m["desc"] = "Leeds United Over/Under"  # the away team under the home id: refuse
+    parsed = mk.parse_pc_events(p)
+    assert not any(o.market == "OU_HOME" for o in parsed.events[0].odds)
+    assert parsed.skipped["unexpected_market_desc"] == 5
+
+
+def test_team_goals_short_label_is_accepted() -> None:
+    """2026-10-08: "Nottingham Over/Under" for Nottingham Forest — side comes from the id."""
+    p = copy.deepcopy(NEW)
+    ev = p["data"][0]["events"][0]
+    for m in ev["markets"]:
+        if m["id"] == "20":
+            m["desc"] = "Leeds Over/Under"
+    odds = _odds(mk.parse_pc_events(p))
+    assert odds[("OU_AWAY", 0.5, "under")].odds == 1.97
+
+
+def test_double_chance_overround_is_scaled() -> None:
+    p = copy.deepcopy(NEW)
+    ev = p["data"][0]["events"][0]
+    dc = next(m for m in ev["markets"] if m["id"] == "10")
+    dc["outcomes"][0]["odds"] = "1.01"  # at the floor: the whole 3-way group is incomplete
+    parsed = mk.parse_pc_events(p)
+    assert not any(o.market == "DC" for o in parsed.events[0].odds)
+    assert parsed.skipped["odds_too_low"] == 1 and parsed.skipped["missing_pair"] == 2
+
+
+HT = _load("pcEvents_epl_halftime.json")  # docs/discovered/sportybet/2026-10-08 (half-time ids)
+
+
+def test_half_time_markets_2026_10_08() -> None:
+    parsed = mk.parse_pc_events(HT)
+    odds = _odds(parsed)
+    assert odds[("AH_1H", -0.5, "home")].odds == 1.91  # Arsenal 1H -0.5 (home line, like 16)
+    assert odds[("AH_1H", -0.5, "away")].sb_outcome_id == "1715"
+    assert odds[("1X2_1H", 0.0, "home")].odds == 1.89
+    assert odds[("1X2_1H", 0.0, "draw")].sb_market_id == "60"
+    assert odds[("DC_2H", 0.0, "home_draw")].sb_market_id == "85"
+    assert odds[("OU_1H", 0.5, "over")].sb_specifier == "total=0.5"
+    assert odds[("OU_2H", 2.5, "under")].sb_market_id == "90"
+    assert odds[("OU_HOME_1H", 0.5, "over")].sb_market_id == "69"
+    assert odds[("OU_AWAY_2H", 0.5, "under")].sb_market_id == "92"
+    assert odds[("BTTS_1H", 0.0, "yes")].sb_outcome_id == "74"
+    # untested lines are out of range; 2H GG/NG (95) failed the gate and is not parsed
+    assert not any(k[0].startswith("OU_") and k[0].endswith("H") and k[1] > 2.5 for k in odds)
+    assert not any(k[0] in ("OU_HOME_1H", "OU_AWAY_1H") and k[1] != 0.5 for k in odds)
+    assert not any(k[0] == "AH_1H" and abs(k[1]) > 0.5 for k in odds)
+    assert not any(k[0] == "BTTS_2H" for k in odds)
+    assert parsed.skipped["other_market"] >= 1
+
+
+def test_full_time_team_goals_refuse_half_time_desc() -> None:
+    assert not mk.MARKET_SPECS["19"].desc_ok("1st half - Arsenal Over/Under", "Arsenal", "Leeds")
+    assert mk.MARKET_SPECS["69"].desc_ok(
+        "1st half - Nottingham Over/Under", "Nottingham Forest", "Arsenal"
+    )
+    assert not mk.MARKET_SPECS["69"].desc_ok("1st half - Leeds Over/Under", "Arsenal", "Leeds")

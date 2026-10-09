@@ -33,12 +33,13 @@ class SanityInput:
     low_confidence: bool
     minutes_to_kickoff: float | None  # None in the backtest (not applicable)
     stale_prediction: bool
+    lineless: bool = False  # 1X2 / DC / BTTS (docs/05 §10): no line to check
 
 
 def sanity_reasons(x: SanityInput, max_model_market_gap: float) -> list[str]:
     """All failed checks, in the order of docs/05 §2 (line filter first)."""
     reasons: list[str] = []
-    if classify_line(x.line) != "half":
+    if not x.lineless and classify_line(x.line) != "half":
         reasons.append(REASON_NON_HALF_LINE)
     if x.p_market_devig is None:
         reasons.append(REASON_MISSING_PAIR)

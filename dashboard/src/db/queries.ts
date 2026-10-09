@@ -78,6 +78,8 @@ export type LegView = {
   homeName: string;
   awayName: string;
   leagueKey: string;
+  /** docs/05 §9: the team-data reason under "data_rule" (null for other rules). */
+  qualifyReason: string | null;
 };
 
 export function legsForSlips(db: Db, slipIds: number[]): Map<number, LegView[]> {
@@ -104,6 +106,7 @@ export function legsForSlips(db: Db, slipIds: number[]): Map<number, LegView[]> 
       homeName: home.canonicalName,
       awayName: away.canonicalName,
       leagueKey: leagues.key,
+      qualifyReason: valueLegs.qualifyReason,
     })
     .from(slipLegs)
     .innerJoin(valueLegs, eq(valueLegs.id, slipLegs.valueLegId))
@@ -428,7 +431,7 @@ export function unsettledPastSlips(db: Db, beforeUtc: string): number {
 
 export type PerfMode = "all" | "paper" | "placed";
 /** docs/05 §8: stats of the two selection rules are kept apart ("all" mixes them). */
-export type PerfStrategy = "all" | "likeliest" | "value";
+export type PerfStrategy = "all" | "data_rule" | "likeliest" | "value";
 
 export type LegPerf = {
   value_leg_id: number;

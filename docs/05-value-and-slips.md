@@ -149,7 +149,7 @@ feasible. B+C: odds 1.917, p 0.585, EM 1.1214 → feasible. A+B+C: odds
 
 ---
 
-## 8. Selection strategy: "likeliest" (user decision 2026-09-30)
+## 8. Selection strategy: "likeliest" (user decision 2026-09-30; superseded by §9 on 2026-10-08)
 
 `value.selection` in `config/settings.toml` picks the rule. The user switched from
 `"value"` (§2.2 above) to `"likeliest"`: *"The goal is to win."* They chose pure
@@ -214,3 +214,105 @@ goals model (football-data HTHG/HTAG), and a backtest before entering slips.
 docs/04 §2.2 for `make odds`, `make picks` and the dashboard fixtures page. Slip
 windows are unchanged (daily 24 h, mid 72 h, mega = weekend window). Early odds move
 more; re-run `make odds` before booking (booking refuses > 3% drift anyway).
+
+## 9. Selection strategy: "data_rule" (user decision 2026-10-08)
+
+`value.selection = "data_rule"` replaces "likeliest" as the active rule. Why: under
+"likeliest" the 30-leg mega acca of 2026-10-12 (ZY25KF) was 30 legs of Over 0.5 /
+Under 5.5 at 1.02–1.08 — total odds 2.64, all-win chance 10.8%, expected multiplier
+0.28. At 1.02 a leg must win 98% to break even; these were ~93%. Ranking by
+probability alone always picks those markets. The user chose to move the agreed
+data rule (2026-10-02, previously only in `data/adhoc/book_data_rule.py`) into the
+engine, and to keep `mega_acca.max_legs = 30`.
+
+### 9.1 Qualifying legs (`value/selection.py::qualifies_data_rule`)
+Settings live in `[value.data_rule]`. Per match: P(score) per team from the model
+score matrix (`1 − P(team scores 0)`); blanks = games the team failed to score in its
+last `form_games` finished matches in the DB (any competition, before now). A leg
+qualifies when **all** hold:
+- `sanity_status = 'ok'` (§2.1 unchanged);
+- `odds ≥ data_rule.min_odds` (1.20) and `p_final ≥ data_rule.min_leg_probability` (0.50);
+- a data reason (`data_reason`):
+  - **AH giving goals** (backed side's handicap < 0): that side is *strong* —
+    P(score) ≥ `strong_score_p`, blanks ≤ `strong_max_blanks`, at least
+    `min_form_games` games. Reason "to win" (−0.5) or "to win by N+" (−(N−0.5)).
+  - **AH taking goals** (handicap > 0): the *other* side is *weak* — P(score) ≤
+    `weak_score_p` and blanks ≥ `weak_min_blanks`. Reason "vs weak attack".
+  - **Under:** at least one side is weak. Reason "weak attack".
+  - **Over:** both sides P(score) ≥ `over_score_p` and blanks ≤ `over_max_blanks`.
+    Reason "both score".
+
+The reason (with the numbers) is stored in `value_legs.qualify_reason` (migration
+0007) and shown per leg on slips and the fixture page. No edge rule; edge and
+expected multiplier are still stored and shown (CLAUDE.md §6: this rule does not
+claim value — the first run on 2026-10-08 still had negative edge on every leg).
+
+### 9.2 Slips under "data_rule"
+Builders treat it like "likeliest" (§8.3): eligibility = `qualifies`, no slip-edge
+floor; daily keeps its reachable-price pool; tie-break order unchanged. The mega acca
+takes up to `max_legs` qualifying legs, so its size is set by how many legs pass.
+
+### 9.3 Tests
+`tests/test_selection.py`: `p_scores`, `team_data`, `data_reason` table (give/take
+goals, too few games, under/over, numbers in the text), `qualifies_data_rule` (odds
+floor incl. 1.02, probability floor, sanity flags), builders use `qualifies` without
+an edge floor. `tests/test_picks.py`: end to end — reason stored iff the leg
+qualifies, odds/probability floors hold, slips tagged `data_rule`.
+
+## 10. More markets: team goals, BTTS, 1X2, double chance (user request 2026-10-08)
+
+SportyBet ids, outcomes and booking verified in
+`docs/discovered/sportybet/2026-10-08/new-markets.md`. Migration 0008 widens the
+`market`/`selection` CHECKs of `odds_snapshots` and `value_legs`.
+
+| code | market | SportyBet id | selections | line |
+|---|---|---|---|---|
+| `OU_HOME` | home team goals | 19 | over / under | `total` (.5) |
+| `OU_AWAY` | away team goals | 20 | over / under | `total` (.5) |
+| `1X2` | match result | 1 | home / draw / away | none → 0.0 |
+| `DC` | double chance | 10 | home_draw / home_away / draw_away | none → 0.0 |
+| `BTTS` | both teams to score (GG/NG) | 29 | yes / no | none → 0.0 |
+
+`value.markets` in settings lists the markets `make picks` prices (odds for every
+market are stored regardless).
+
+### 10.1 Pricing and settlement (`model/markets.py`)
+The same score-matrix code prices and settles every market (docs/03 §8). Team goals use
+the O/U margin on one team's goals (whole/quarter lines work as for OU but are
+flagged). Lineless markets win or lose — no push: 1X2 by goal difference sign; double
+chance home_draw = diff ≥ 0, home_away = diff ≠ 0, draw_away = diff ≤ 0; BTTS yes =
+both ≥ 1. `is_binary(market, line)` (lineless or half line) replaces "half line" in the
+expected-multiplier and calibration code.
+
+### 10.2 Devig and sanity (`value/edge.py::evaluate_group`)
+Multiplicative devig over all outcomes of the market: p_i = T·q_i / Σq, with T = 1
+(two-/three-way) or **T = 2 for double chance** (each score wins two of three
+selections). Overround = Σq / T, same 1.00–1.15 window. The line check is skipped for
+lineless markets; every other §2.1 check applies. `evaluate_pair` (backtest, AH/OU) is
+a wrapper.
+
+### 10.3 Data rule (§9.1) for the new markets
+- 1X2 home/away: as AH −0.5 (backed team strong, "to win"); the **draw never qualifies**.
+- DC home_draw / draw_away: as AH +0.5 (the other team's attack is weak); **home_away
+  never qualifies**.
+- BTTS yes: as Over ("both score"); BTTS no: as Under ("weak attack").
+- Team goals: Over needs *that* team strong ("to score", "to score N+"); Under needs that
+  team weak.
+- "likeliest" (§8) keeps to AH/OU; "value" (§2.2) applies unchanged.
+
+### 10.4 Validation status
+No historical SportyBet-comparable odds exist for team goals, BTTS or double chance
+(football-data has 1X2 only), so these markets are **unvalidated** like INTL (docs/09):
+labelled on every leg in the dashboard and judged on paper results. A 1X2 backtest is
+possible later from football-data 1X2 odds.
+
+### 10.5 Tests
+`tests/test_more_markets.py` (settlement table, pricing identities incl. 1X2 home = AH
+−0.5 and DC home_draw = AH +0.5, three-way and DC devig, lineless evaluation, data
+reasons, likeliest exclusion), `tests/test_sportybet_markets.py` (ids/outcomes on the
+2026-10-08 sample, short team labels, DC overround scaling).
+
+### 10.6 Next: half-time markets
+Ids recorded (1st/2nd half 1X2, DC, AH, O/U, team goals, GG/NG). Needs a half-time
+goals model from football-data HTHG/HTAG, settlement from `gameScore[0]`/`[1]`, and a
+backtest before entering slips.

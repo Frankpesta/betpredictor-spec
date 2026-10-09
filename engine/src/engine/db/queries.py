@@ -60,6 +60,26 @@ def load_finished_matches(session: Session, league_id: int) -> LeagueMatches:
     )
 
 
+def load_half_time_goals(
+    session: Session, league_id: int, match_ids: np.ndarray
+) -> tuple[np.ndarray, np.ndarray]:
+    """docs/10 §1: first-half goals aligned with `match_ids` (NaN when unknown)."""
+    got = dict(
+        (r[0], (r[1], r[2]))
+        for r in session.execute(
+            select(Match.id, Match.ht_home_goals, Match.ht_away_goals).where(
+                Match.league_id == league_id, Match.status == "finished"
+            )
+        )
+    )
+
+    def col(k: int) -> np.ndarray:
+        vals = [got.get(int(i), (None, None))[k] for i in match_ids]
+        return np.array([np.nan if v is None else v for v in vals], dtype=float)
+
+    return col(0), col(1)
+
+
 def team_names(session: Session) -> dict[int, str]:
     return {t.id: t.canonical_name for t in session.scalars(select(Team))}
 

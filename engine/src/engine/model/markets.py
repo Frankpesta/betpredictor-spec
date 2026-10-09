@@ -13,13 +13,71 @@ from typing import Literal
 import numpy as np
 import numpy.typing as npt
 
-Market = Literal["OU", "AH"]
-Selection = Literal["over", "under", "home", "away"]
+# docs/05 §10 (2026-10-08): team goals, both teams to score, 1X2 and double chance join
+# AH/OU. OU_HOME/OU_AWAY are one team's goals; 1X2/DC/BTTS have no line (stored as 0.0).
+# docs/10 §3: a half-time market is the full-time code + "_1H" / "_2H", settled by the same
+# rules on that half's score (the caller passes the half's matrix or score).
+Market = Literal[
+    "OU",
+    "AH",
+    "OU_HOME",
+    "OU_AWAY",
+    "1X2",
+    "DC",
+    "BTTS",
+    "OU_1H",
+    "OU_2H",
+    "AH_1H",
+    "AH_2H",
+    "OU_HOME_1H",
+    "OU_HOME_2H",
+    "OU_AWAY_1H",
+    "OU_AWAY_2H",
+    "1X2_1H",
+    "1X2_2H",
+    "DC_1H",
+    "DC_2H",
+    "BTTS_1H",
+    "BTTS_2H",
+]
+Period = Literal["FT", "1H", "2H"]
+Selection = Literal[
+    "over", "under", "home", "away", "draw", "home_draw", "home_away", "draw_away", "yes", "no"
+]
 Result = Literal["win", "half_win", "push", "half_loss", "loss"]
 LineKind = Literal["half", "whole", "quarter"]
 
 RESULTS: tuple[Result, ...] = ("win", "half_win", "push", "half_loss", "loss")
-_SELECTIONS: dict[str, tuple[str, ...]] = {"OU": ("over", "under"), "AH": ("home", "away")}
+SELECTIONS_BY_MARKET: dict[str, tuple[str, ...]] = {
+    "OU": ("over", "under"),
+    "AH": ("home", "away"),
+    "OU_HOME": ("over", "under"),
+    "OU_AWAY": ("over", "under"),
+    "1X2": ("home", "draw", "away"),
+    "DC": ("home_draw", "home_away", "draw_away"),
+    "BTTS": ("yes", "no"),
+}
+FULL_TIME_MARKETS = tuple(SELECTIONS_BY_MARKET)
+for _base in FULL_TIME_MARKETS:
+    for _p in ("1H", "2H"):
+        SELECTIONS_BY_MARKET[f"{_base}_{_p}"] = SELECTIONS_BY_MARKET[_base]
+_SELECTIONS = SELECTIONS_BY_MARKET
+# Markets without a line: every selection simply wins or loses.
+LINELESS_MARKETS = frozenset({"1X2", "DC", "BTTS"})
+
+
+def split_period(market: str) -> tuple[str, Period]:
+    """("OU_1H") -> ("OU", "1H"); full-time codes -> (code, "FT")."""
+    for p in ("1H", "2H"):
+        if market.endswith("_" + p):
+            return market[: -len(p) - 1], p
+    return market, "FT"
+
+
+def base_market(market: str) -> str:
+    return split_period(market)[0]
+
+
 _TOL = 1e-9
 
 FloatArray = npt.NDArray[np.float64]
@@ -53,6 +111,11 @@ def classify_line(line: float) -> LineKind:
     raise ValueError(f"unsupported line {line!r}")
 
 
+def is_binary(market: str, line: float) -> bool:
+    """Win-or-lose only (no push / half results): lineless markets and half lines."""
+    return base_market(market) in LINELESS_MARKETS or classify_line(line) == "half"
+
+
 def _check(market: str, selection: str) -> None:
     if selection not in _SELECTIONS.get(market, ()):
         raise ValueError(f"invalid market/selection {market!r}/{selection!r}")
@@ -60,7 +123,12 @@ def _check(market: str, selection: str) -> None:
 
 def _margin(market: str, selection: str, line: float, home: IntArray, away: IntArray) -> FloatArray:
     """docs/03 §8.3 margin m for a single (non-quarter) line."""
+    market = base_market(market)
     total = (home + away).astype(np.float64)
+    if market == "OU_HOME":
+        total = home.astype(np.float64)
+    elif market == "OU_AWAY":
+        total = away.astype(np.float64)
     diff = (home - away).astype(np.float64)
     if selection == "over":
         return total - line
@@ -76,6 +144,21 @@ def _sign(m: FloatArray) -> IntArray:
     return np.where(m > _TOL, 1, np.where(m < -_TOL, -1, 0)).astype(np.int64)
 
 
+def _lineless_win(selection: str, home: IntArray, away: IntArray) -> npt.NDArray[np.bool_]:
+    """1X2 / double chance / both teams to score: True where the selection wins."""
+    wins: dict[str, npt.NDArray[np.bool_]] = {
+        "home": home > away,
+        "draw": home == away,
+        "away": home < away,
+        "home_draw": home >= away,
+        "home_away": home != away,
+        "draw_away": home <= away,
+        "yes": (home > 0) & (away > 0),
+        "no": (home == 0) | (away == 0),
+    }
+    return wins[selection]
+
+
 # Result codes index into RESULTS.
 _WIN, _HALF_WIN, _PUSH, _HALF_LOSS, _LOSS = range(5)
 
@@ -85,6 +168,9 @@ def _results_grid(
 ) -> IntArray:
     """Result code (index into RESULTS) for each scoreline."""
     _check(market, selection)
+    if base_market(market) in LINELESS_MARKETS:
+        won = _lineless_win(selection, home, away)
+        return np.where(won, _WIN, _LOSS).astype(np.int64)
     if classify_line(line) != "quarter":
         s = _sign(_margin(market, selection, line, home, away))
         return np.where(s > 0, _WIN, np.where(s < 0, _LOSS, _PUSH)).astype(np.int64)

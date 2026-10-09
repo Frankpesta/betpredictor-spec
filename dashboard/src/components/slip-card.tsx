@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import type { SlipWithLegs } from "@/db/queries";
 import { odds2, pct1, pct4sig } from "@/lib/format";
-import { SLIP_TYPE_LABEL } from "@/lib/labels";
+import { SLIP_TYPE_LABEL, STRATEGY_LABEL } from "@/lib/labels";
 import { cn } from "@/lib/utils";
 
 export const BOOKING_LABEL: Record<string, string> = {
@@ -45,6 +45,12 @@ type Props = {
   strategy: string;
 };
 
+const STRATEGY_TITLE: Record<string, string> = {
+  data_rule: "Every leg is backed by team data: scoring chance and recent blanks (docs/05 §9)",
+  likeliest: "Built from the most probable legs (docs/05 §8), not from value",
+  value: "Built from legs with estimated positive value (docs/05 §2.2)",
+};
+
 export function SlipCard({ slipType, pool, slip, edgeValidated, strategy }: Props) {
   const mega = slipType === "mega_acca";
   const style = TYPE_STYLE[slipType] ?? TYPE_STYLE.daily_2odds;
@@ -68,13 +74,9 @@ export function SlipCard({ slipType, pool, slip, edgeValidated, strategy }: Prop
           {slip && (
             <Badge
               variant="secondary"
-              title={
-                slip.strategy === "likeliest"
-                  ? "Built from the most probable legs (docs/05 §8), not from value"
-                  : "Built from legs with estimated positive value (docs/05 §2.2)"
-              }
+              title={STRATEGY_TITLE[slip.strategy] ?? STRATEGY_TITLE.value}
             >
-              {slip.strategy === "likeliest" ? "Likeliest" : "Value"}
+              {STRATEGY_LABEL[slip.strategy as keyof typeof STRATEGY_LABEL] ?? slip.strategy}
             </Badge>
           )}
           {slip && slip.status !== "open" && (

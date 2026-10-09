@@ -30,6 +30,7 @@ class SbResult:
     status: int | None
     match_status: str
     score_90: tuple[int, int] | None  # None when per-half scores are missing/inconsistent
+    score_1h: tuple[int, int] | None = None  # docs/10 §3: gameScore[0], only with score_90
 
     @property
     def ended(self) -> bool:
@@ -59,6 +60,13 @@ def ninety_minute_score(event: dict[str, Any]) -> tuple[int, int] | None:
     return score
 
 
+def first_half_score(event: dict[str, Any]) -> tuple[int, int] | None:
+    """docs/10 §3: gameScore[0], trusted only when the 90-minute score is (halves add up)."""
+    if ninety_minute_score(event) is None:
+        return None
+    return _pair(event["gameScore"][0])
+
+
 def parse_results(payload: dict[str, Any]) -> tuple[dict[str, SbResult], int]:
     """→ ({eventId: result}, totalNum)."""
     data = check_envelope(payload) or {}
@@ -72,6 +80,7 @@ def parse_results(payload: dict[str, Any]) -> tuple[dict[str, SbResult], int]:
                 status=int(status) if isinstance(status, int) else None,
                 match_status=str(e.get("matchStatus") or ""),
                 score_90=ninety_minute_score(e),
+                score_1h=first_half_score(e),
             )
     return out, int(data.get("totalNum") or 0)
 

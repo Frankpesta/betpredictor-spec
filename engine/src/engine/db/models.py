@@ -20,12 +20,26 @@ ODDS_TIMINGS = ("open", "close")
 HIST_MARKETS = ("OU", "AH", "1X2")
 HIST_SELECTIONS = ("home", "draw", "away", "over", "under")
 SNAPSHOT_KINDS = ("pick", "close")
-MARKETS = ("OU", "AH")
-SELECTIONS = ("over", "under", "home", "away")
+# docs/05 §10 (migration 0008): team goals, both teams to score, 1X2, double chance
+MARKETS_FT = ("OU", "AH", "OU_HOME", "OU_AWAY", "1X2", "DC", "BTTS")
+# docs/10 §3 (migration 0010): half-time codes = full-time code + _1H / _2H
+MARKETS = (*MARKETS_FT, *(f"{m}_{h}" for h in ("1H", "2H") for m in MARKETS_FT))
+SELECTIONS = (
+    "over",
+    "under",
+    "home",
+    "away",
+    "draw",
+    "home_draw",
+    "home_away",
+    "draw_away",
+    "yes",
+    "no",
+)
 SANITY_STATUSES = ("ok", "flagged")
 SLIP_TYPES = ("daily_2odds", "mid_acca", "mega_acca")
 SLIP_POOLS = ("club", "intl")  # docs/09 §5: INTL legs only in INTL-only slips
-SLIP_STRATEGIES = ("value", "likeliest")  # docs/05 §8: which selection rule built the slip
+SLIP_STRATEGIES = ("value", "likeliest", "data_rule")  # docs/05 §8-9: rule that built the slip
 BOOKING_STATUSES = ("pending", "booked", "failed", "manual")
 SLIP_MODES = ("paper", "placed")
 SLIP_STATUSES = ("open", "won", "lost", "void", "partial")
@@ -86,6 +100,9 @@ class Match(IdTimestampMixin, Base):
     away_team_id: Mapped[int] = mapped_column(_fk("teams.id"), index=True)
     home_goals: Mapped[int | None] = mapped_column(Integer)
     away_goals: Mapped[int | None] = mapped_column(Integer)
+    # docs/10 §1: first-half goals (football-data HTHG/HTAG); NULL when unknown
+    ht_home_goals: Mapped[int | None] = mapped_column(Integer)
+    ht_away_goals: Mapped[int | None] = mapped_column(Integer)
     home_xg: Mapped[float | None] = mapped_column(REAL)
     away_xg: Mapped[float | None] = mapped_column(REAL)
     status: Mapped[str] = mapped_column(Text, default="scheduled", server_default="scheduled")
@@ -210,6 +227,8 @@ class ValueLeg(IdTimestampMixin, Base):
     sanity_reason: Mapped[str | None] = mapped_column(Text)
     # docs/05 §8: slip eligibility under the strategy active at pick time (NULL before 0006)
     qualifies: Mapped[bool | None] = mapped_column(IntBool)
+    # docs/05 §9: the team-data reason a leg qualifies under "data_rule" (NULL otherwise)
+    qualify_reason: Mapped[str | None] = mapped_column(Text)
 
 
 class Slip(IdTimestampMixin, Base):

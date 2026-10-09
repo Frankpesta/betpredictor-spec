@@ -8,14 +8,14 @@ import { getDb } from "@/db/client";
 import { legPerformance, slipPerformance, type PerfMode, type PerfStrategy } from "@/db/queries";
 import { ENGINE_URL } from "@/lib/engine";
 import { orDash, pct1, pctSigned } from "@/lib/format";
-import { SLIP_TYPE_LABEL, SLIP_TYPES } from "@/lib/labels";
+import { SLIP_TYPE_LABEL, SLIP_TYPES, STRATEGY_LABEL } from "@/lib/labels";
 import { equityCurve, groupLegs, legStats, oddsBand, slipStats } from "@/lib/perf";
 import { loadSettings } from "@/lib/settings";
 import { cn } from "@/lib/utils";
 
 const MODES: PerfMode[] = ["all", "paper", "placed"];
-const STRATEGIES: PerfStrategy[] = ["likeliest", "value", "all"];
-const STRATEGY_LABEL: Record<PerfStrategy, string> = { likeliest: "Likeliest", value: "Value", all: "Both" };
+const STRATEGIES: PerfStrategy[] = ["data_rule", "likeliest", "value", "all"];
+const PERF_LABEL: Record<PerfStrategy, string> = { ...STRATEGY_LABEL, all: "All" };
 
 function one(v: string | string[] | undefined): string | undefined {
   return Array.isArray(v) ? v[0] : v;
@@ -115,7 +115,7 @@ export default async function PerformancePage(props: PageProps<"/performance">) 
             <Tabs
               items={STRATEGIES}
               active={strategy}
-              label={(t) => STRATEGY_LABEL[t]}
+              label={(t) => PERF_LABEL[t]}
               href={(t) => perfHref(mode, t, current)}
             />
             <Tabs items={MODES} active={mode} label={(m) => m} href={(m) => perfHref(m, strategy, current)} />
